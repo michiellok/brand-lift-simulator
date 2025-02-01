@@ -25,13 +25,27 @@ with tab1:
     kpi_goal = st.selectbox("KPI Focus", ["Awareness", "Consideration", "Preference", "Intent"])
     
     st.header("📡 Media Allocatie")
-    media_alloc = {
+    alloc_type = st.radio("Kies allocatiemethode:", ["Percentage", "Budget (€)"])
+        if alloc_type == "Percentage":
+        media_alloc = {
         "Display": st.slider("Display (%)", 0, 100, 20),
         "Video": st.slider("Video (%)", 0, 100, 20),
         "DOOH": st.slider("DOOH (%)", 0, 100, 20),
         "Social": st.slider("Social (%)", 0, 100, 20),
         "CTV": st.slider("CTV (%)", 0, 100, 20),
     }
+    
+    else:
+        media_alloc = {
+            "Display": st.number_input("Display Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
+            "Video": st.number_input("Video Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
+            "DOOH": st.number_input("DOOH Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
+            "Social": st.number_input("Social Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
+            "CTV": st.number_input("CTV Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
+        }
+        total_budget_alloc = sum(media_alloc.values())
+        if total_budget_alloc > budget:
+            st.warning("⚠️ Het totaal toegewezen budget overschrijdt het campagnebudget!")
     
     total_alloc = sum(media_alloc.values())
     if total_alloc > 0 and total_alloc != 100:
@@ -97,3 +111,4 @@ with tab3:
     
     df_decay = pd.DataFrame(decay_values, index=days)
     st.line_chart(df_decay)
+
