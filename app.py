@@ -14,7 +14,9 @@ tab1, tab2, tab3 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisati
 with tab1:
     st.header("📊 Campagne-instellingen")
     budget = st.number_input("Totaal Budget (in €)", min_value=0, max_value=1000000, value=100, step=100)
-    campaign_duration = st.slider("Campagne Duur (dagen)", 1, 90, 7)
+    campaign_start = st.date_input("📅 Startdatum Campagne")
+campaign_end = st.date_input("📅 Einddatum Campagne")
+campaign_duration = (campaign_end - campaign_start).days if campaign_end > campaign_start else 1
     
     st.header("🔧 Extra variabelen")
     cpm = st.slider("Cost per Mille (CPM in €)", 1, 50, 10)
