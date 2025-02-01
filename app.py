@@ -10,6 +10,18 @@ st.subheader("Test verschillende mediaverdelingen en krijg een geoptimaliseerd a
 # Initialiseer session state
 if "active_tab" not in st.session_state:
     st.session_state["active_tab"] = "📊 Invoer"
+if "media_alloc" not in st.session_state:
+    st.session_state["media_alloc"] = {}
+if "budget" not in st.session_state:
+    st.session_state["budget"] = 100
+if "campaign_duration" not in st.session_state:
+    st.session_state["campaign_duration"] = 7
+if "cpm" not in st.session_state:
+    st.session_state["cpm"] = 10
+if "frequency_cap" not in st.session_state:
+    st.session_state["frequency_cap"] = 10
+if "creative_effectiveness" not in st.session_state:
+    st.session_state["creative_effectiveness"] = 0.7
 
 # Tabs maken
 selected_tab = st.session_state["active_tab"]
@@ -19,16 +31,23 @@ tab1, tab2, tab3 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisati
 if selected_tab == "📊 Invoer":
     with tab1:
         st.header("📊 Campagne-instellingen")
-        budget = st.number_input("Totaal Budget (in €)", min_value=0, max_value=1000000, value=100, step=100)
+        budget = st.number_input("Totaal Budget (in €)", min_value=0, max_value=1000000, value=st.session_state["budget"], step=100)
         campaign_start = st.date_input("📅 Startdatum Campagne")
         campaign_end = st.date_input("📅 Einddatum Campagne")
         campaign_duration = (campaign_end - campaign_start).days if campaign_end > campaign_start else 1
         
+        st.session_state["budget"] = budget
+        st.session_state["campaign_duration"] = campaign_duration
+        
         st.header("🔧 Extra variabelen")
-        cpm = st.slider("Cost per Mille (CPM in €)", 1, 50, 10)
-        frequency_cap = st.slider("Frequency Cap (max. frequentie per gebruiker)", 1, 20, 10)
-        creative_effectiveness = st.slider("Creative Effectiveness Score (0-1)", 0.1, 1.0, 0.7)
+        cpm = st.slider("Cost per Mille (CPM in €)", 1, 50, st.session_state["cpm"])
+        frequency_cap = st.slider("Frequency Cap (max. frequentie per gebruiker)", 1, 20, st.session_state["frequency_cap"])
+        creative_effectiveness = st.slider("Creative Effectiveness Score (0-1)", 0.1, 1.0, st.session_state["creative_effectiveness"])
         kpi_goal = st.selectbox("KPI Focus", ["Awareness", "Consideration", "Preference", "Intent"])
+        
+        st.session_state["cpm"] = cpm
+        st.session_state["frequency_cap"] = frequency_cap
+        st.session_state["creative_effectiveness"] = creative_effectiveness
         
         st.header("📡 Media Allocatie")
         allocation_type = st.radio("Kies allocatiemethode:", ["Percentage", "Budget (€)"])
@@ -53,9 +72,8 @@ if selected_tab == "📊 Invoer":
                 "Social": st.number_input("Social Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
                 "CTV": st.number_input("CTV Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
             }
-            total_budget_alloc = sum(media_alloc.values())
-            if total_budget_alloc > budget:
-                st.warning("⚠️ Het totaal toegewezen budget overschrijdt het campagnebudget!")
+        
+        st.session_state["media_alloc"] = media_alloc
         
         # Next button to navigate to results
         if st.button("Next →"):
@@ -63,7 +81,7 @@ if selected_tab == "📊 Invoer":
             st.rerun()
 
 # 2️⃣ Resultaten tab
-if selected_tab == "🚀 Resultaten":
+if selected_tab == "🚀 Resultaten" and "media_alloc" in st.session_state:
     with tab2:
         st.header("🚀 Berekening van Brand Lift per Kanaal")
         media_characteristics = {
@@ -73,21 +91,21 @@ if selected_tab == "🚀 Resultaten":
             "Social": {"attention": 0.75, "frequency": 4, "context_fit": 0.65},
             "CTV": {"attention": 0.85, "frequency": 6, "context_fit": 0.8},
         }
-        decay_rates = {"Display": 0.20, "Video": 0.10, "DOOH": 0.05, "Social": 0.15, "CTV": 0.08}
         
         brand_lift_per_channel = {}
-        for channel, alloc in media_alloc.items():
-            reach = (alloc / 100) * (budget / cpm) * min(campaign_duration / 30, 1)
+        for channel, alloc in st.session_state["media_alloc"].items():
+            reach = (alloc / 100) * (st.session_state["budget"] / st.session_state["cpm"]) * min(st.session_state["campaign_duration"] / 30, 1)
             frequency = media_characteristics[channel]["frequency"]
             attention = media_characteristics[channel]["attention"]
             context_fit = media_characteristics[channel]["context_fit"]
             
-            if frequency > frequency_cap:
+            if frequency > st.session_state["frequency_cap"]:
                 frequency *= 0.75  # Frequency Cap effect
             
-            brand_lift = min((0.4 * reach) + (0.3 * frequency) + (0.6 * attention) + (0.3 * context_fit) + (0.4 * creative_effectiveness), 100)
+            brand_lift = min((0.4 * reach) + (0.3 * frequency) + (0.6 * attention) + (0.3 * context_fit) + (0.4 * st.session_state["creative_effectiveness"]), 100)
             brand_lift_per_channel[channel] = brand_lift
         
         total_brand_lift = sum(brand_lift_per_channel.values())
         st.metric(label="🚀 Totale Brand Lift", value=round(total_brand_lift, 2))
+
 
