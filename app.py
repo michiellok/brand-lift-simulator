@@ -24,7 +24,9 @@ if "creative_effectiveness" not in st.session_state:
     st.session_state["creative_effectiveness"] = 0.7
 
 # Tabs maken
-tabs = ["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie"]
+selected_tab = st.session_state["active_tab"]
+tabs = st.radio("Ga naar:", ["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie"], index=["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie"].index(selected_tab))
+st.session_state["active_tab"] = tabs
 selected_tab = st.session_state["active_tab"]
 tab1, tab2, tab3 = st.tabs(tabs)
 
@@ -105,6 +107,7 @@ with tab3:
     if "media_alloc" in st.session_state:
         optimal_alloc = {k: v + 5 for k, v in st.session_state["media_alloc"].items()}
         st.json(optimal_alloc)
+
 
 
 
