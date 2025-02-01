@@ -18,7 +18,7 @@ with tab1:
     
     st.header("🔧 Extra variabelen")
     cpm = st.slider("Cost per Mille (CPM in €)", 1, 50, 10)
-    ad_fatigue_threshold = st.slider("Ad Fatigue Threshold (max. frequentie)", 1, 20, 10)
+    frequency_cap = st.slider("Frequency Cap (max. frequentie per gebruiker)", 1, 20, 10)
     creative_effectiveness = st.slider("Creative Effectiveness Score (0-1)", 0.1, 1.0, 0.7)
     kpi_goal = st.selectbox("KPI Focus", ["Awareness", "Consideration", "Preference", "Intent"])
     
@@ -55,7 +55,7 @@ with tab2:
         attention = media_characteristics[channel]["attention"]
         context_fit = media_characteristics[channel]["context_fit"]
         
-        if frequency > ad_fatigue_threshold:
+        if frequency > frequency_cap:
             frequency *= 0.75  # Ad Fatigue effect
         
         brand_lift = min((0.4 * reach) + (0.3 * frequency) + (0.6 * attention) + (0.3 * context_fit) + (0.4 * creative_effectiveness), 100)
@@ -83,7 +83,7 @@ with tab3:
     st.write("- 📊 **Budget & CPM**: Een efficiëntere kostenverdeling over de kanalen die de hoogste ROI bieden.")
     st.write("- 🎯 **Mediakenmerken**: Kanalen met een hoge attentiewaarde en contextuele relevantie krijgen een groter aandeel.")
     st.write("- ⏳ **Campagne Duur & Time Decay**: Houdt rekening met de duur van de campagne en hoe lang de impact blijft.")
-    st.write("- ⚠️ **Ad Fatigue Threshold**: Zorgt ervoor dat geen enkel kanaal oververzadigd wordt met advertenties.")
+    st.write("- ⚠️ **Frequency Cap**: Voorkomt dat gebruikers te vaak dezelfde advertentie zien, wat advertentiemoeheid vermindert.")
     st.write("- 📢 **KPI Focus**: De verdeling past zich aan op jouw gekozen KPI, bijvoorbeeld awareness of intent.")
     st.json({key: f"{value}%" for key, value in optimal_alloc.items()})
     
