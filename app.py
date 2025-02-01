@@ -78,7 +78,7 @@ with tab1:
     # Next button to navigate to results
     if st.button("Next →"):
         st.session_state["active_tab"] = "🚀 Resultaten"
-        st.experimental_rerun()
+        st.rerun()
 
 # 2️⃣ Resultaten tab
 with tab2:
@@ -105,6 +105,7 @@ with tab3:
     if "media_alloc" in st.session_state:
         optimal_alloc = {k: v + 5 for k, v in st.session_state["media_alloc"].items()}
         st.json(optimal_alloc)
+
 
 
 
