@@ -68,7 +68,7 @@ st.metric(label="🚀 Totale Brand Lift", value=round(total_brand_lift, 2))
 st.write("### 🔍 Geoptimaliseerde Media-Allocatie")
 optimal_alloc = {"Display": 15, "Video": 30, "DOOH": 15, "Social": 20, "CTV": 20}  # Eenvoudige optimalisatie
 st.write("🚀 Op basis van jouw budget en looptijd adviseren we:")
-st.json(optimal_alloc)
+st.json({key: f"{value}%" for key, value in optimal_alloc.items()})
 
 # 6️⃣ Time Decay Simulatie
 st.write("### ⏳ Time Decay Effect per Mediatype")
@@ -89,3 +89,4 @@ st.write("- 📉 **Time Decay**: Dit model laat zien hoe de impact afneemt naarm
 st.write("- ⚠️ **Ad Fatigue Threshold**: Als een advertentie te vaak wordt vertoond, kan dit de effectiviteit verlagen. Dit model houdt hier rekening mee.")
 st.write("- 🎨 **Creative Effectiveness**: Creativiteit heeft een directe invloed op de effectiviteit van de campagne. Een hogere score verhoogt de Brand Lift.")
 st.write("- 🎯 **KPI Focus (Awareness, Consideration, Preference, Intent)**: De gekozen KPI bepaalt hoe de mediakanalen het beste kunnen worden ingezet.")
+
