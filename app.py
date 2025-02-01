@@ -7,56 +7,63 @@ import matplotlib.pyplot as plt
 st.title("Brand Lift & Cross-Channel Optimization Dashboard")
 st.subheader("Test verschillende mediaverdelingen en krijg een geoptimaliseerd advies")
 
+# Initialiseer session state
+if "active_tab" not in st.session_state:
+    st.session_state["active_tab"] = "📊 Invoer"
+
 # Tabs maken
+selected_tab = st.session_state["active_tab"]
 tab1, tab2, tab3 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie"])
 
 # 1️⃣ Invoer tab
-with tab1:
-    st.header("📊 Campagne-instellingen")
-    budget = st.number_input("Totaal Budget (in €)", min_value=0, max_value=1000000, value=100, step=100)
-    campaign_start = st.date_input("📅 Startdatum Campagne")
-    campaign_end = st.date_input("📅 Einddatum Campagne")
-    campaign_duration = (campaign_end - campaign_start).days if campaign_end > campaign_start else 1
-    
-    st.header("🔧 Extra variabelen")
-    cpm = st.slider("Cost per Mille (CPM in €)", 1, 50, 10)
-    frequency_cap = st.slider("Frequency Cap (max. frequentie per gebruiker)", 1, 20, 10)
-    creative_effectiveness = st.slider("Creative Effectiveness Score (0-1)", 0.1, 1.0, 0.7)
-    kpi_goal = st.selectbox("KPI Focus", ["Awareness", "Consideration", "Preference", "Intent"])
-    
-    st.header("📡 Media Allocatie")
-    allocation_type = st.radio("Kies allocatiemethode:", ["Percentage", "Budget (€)"])
-    
-    if allocation_type == "Percentage":
-        media_alloc = {
-            "Display": st.slider("Display (%)", 0, 100, 20),
-            "Video": st.slider("Video (%)", 0, 100, 20),
-            "DOOH": st.slider("DOOH (%)", 0, 100, 20),
-            "Social": st.slider("Social (%)", 0, 100, 20),
-            "CTV": st.slider("CTV (%)", 0, 100, 20),
-        }
-        total_alloc = sum(media_alloc.values())
-        if total_alloc > 0 and total_alloc != 100:
-            scaling_factor = 100 / total_alloc
-            media_alloc = {key: round(value * scaling_factor, 2) for key, value in media_alloc.items()}
-    else:
-        media_alloc = {
-            "Display": st.number_input("Display Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
-            "Video": st.number_input("Video Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
-            "DOOH": st.number_input("DOOH Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
-            "Social": st.number_input("Social Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
-            "CTV": st.number_input("CTV Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
-        }
-        total_budget_alloc = sum(media_alloc.values())
-        if total_budget_alloc > budget:
-            st.warning("⚠️ Het totaal toegewezen budget overschrijdt het campagnebudget!")
-    
-    # Next button to navigate to results
-    if st.button("Next →"):
-        st.session_state["show_results"] = True
+if selected_tab == "📊 Invoer":
+    with tab1:
+        st.header("📊 Campagne-instellingen")
+        budget = st.number_input("Totaal Budget (in €)", min_value=0, max_value=1000000, value=100, step=100)
+        campaign_start = st.date_input("📅 Startdatum Campagne")
+        campaign_end = st.date_input("📅 Einddatum Campagne")
+        campaign_duration = (campaign_end - campaign_start).days if campaign_end > campaign_start else 1
+        
+        st.header("🔧 Extra variabelen")
+        cpm = st.slider("Cost per Mille (CPM in €)", 1, 50, 10)
+        frequency_cap = st.slider("Frequency Cap (max. frequentie per gebruiker)", 1, 20, 10)
+        creative_effectiveness = st.slider("Creative Effectiveness Score (0-1)", 0.1, 1.0, 0.7)
+        kpi_goal = st.selectbox("KPI Focus", ["Awareness", "Consideration", "Preference", "Intent"])
+        
+        st.header("📡 Media Allocatie")
+        allocation_type = st.radio("Kies allocatiemethode:", ["Percentage", "Budget (€)"])
+        
+        if allocation_type == "Percentage":
+            media_alloc = {
+                "Display": st.slider("Display (%)", 0, 100, 20),
+                "Video": st.slider("Video (%)", 0, 100, 20),
+                "DOOH": st.slider("DOOH (%)", 0, 100, 20),
+                "Social": st.slider("Social (%)", 0, 100, 20),
+                "CTV": st.slider("CTV (%)", 0, 100, 20),
+            }
+            total_alloc = sum(media_alloc.values())
+            if total_alloc > 0 and total_alloc != 100:
+                scaling_factor = 100 / total_alloc
+                media_alloc = {key: round(value * scaling_factor, 2) for key, value in media_alloc.items()}
+        else:
+            media_alloc = {
+                "Display": st.number_input("Display Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
+                "Video": st.number_input("Video Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
+                "DOOH": st.number_input("DOOH Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
+                "Social": st.number_input("Social Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
+                "CTV": st.number_input("CTV Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
+            }
+            total_budget_alloc = sum(media_alloc.values())
+            if total_budget_alloc > budget:
+                st.warning("⚠️ Het totaal toegewezen budget overschrijdt het campagnebudget!")
+        
+        # Next button to navigate to results
+        if st.button("Next →"):
+            st.session_state["active_tab"] = "🚀 Resultaten"
+            st.rerun()
 
 # 2️⃣ Resultaten tab
-if "show_results" in st.session_state and st.session_state["show_results"]:
+if selected_tab == "🚀 Resultaten":
     with tab2:
         st.header("🚀 Berekening van Brand Lift per Kanaal")
         media_characteristics = {
@@ -83,3 +90,4 @@ if "show_results" in st.session_state and st.session_state["show_results"]:
         
         total_brand_lift = sum(brand_lift_per_channel.values())
         st.metric(label="🚀 Totale Brand Lift", value=round(total_brand_lift, 2))
+
