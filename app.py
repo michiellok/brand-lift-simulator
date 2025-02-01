@@ -11,7 +11,7 @@ st.subheader("Test verschillende mediaverdelingen en krijg een geoptimaliseerd a
 st.sidebar.header("Campagne-instellingen")
 
 # Budget, looptijd en media-allocatie sliders
-budget = st.sidebar.slider("📊 Totaal Budget (in miljoen €)", 0, 3, 1)
+budget = st.sidebar.slider("📊 Totaal Budget (in €)", 500, 1000000, 10000, step=500)
 campaign_duration = st.sidebar.slider("📅 Campagne Duur (dagen)", 1, 90, 7)
 
 # Extra variabelen
@@ -20,7 +20,7 @@ cpm = st.sidebar.slider("💰 Cost per Mille (CPM in €)", 1, 50, 10)
 target_audience_fit = st.sidebar.slider("🎯 Target Audience Fit (0-1)", 0.1, 1.0, 0.8)
 ad_fatigue_threshold = st.sidebar.slider("⚠️ Ad Fatigue Threshold (max. frequentie)", 1, 20, 10)
 creative_effectiveness = st.sidebar.slider("🎨 Creative Effectiveness Score (0-1)", 0.1, 1.0, 0.7)
-kpi_goal = st.sidebar.selectbox("📢 KPI Focus", ["Awareness", "Consideration", "Intent"])
+kpi_goal = st.sidebar.selectbox("📢 KPI Focus", ["Awareness", "Consideration", "Preference", "Intent"])
 
 # Media-allocatie
 media_alloc = {
