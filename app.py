@@ -26,7 +26,7 @@ if "creative_effectiveness" not in st.session_state:
 # Tabs maken
 selected_tab = st.session_state["active_tab"]
 
-st.session_state["active_tab"] = tabs
+
 selected_tab = st.session_state["active_tab"]
 tab1, tab2, tab3 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie"])
 
@@ -107,6 +107,7 @@ with tab3:
     if "media_alloc" in st.session_state:
         optimal_alloc = {k: v + 5 for k, v in st.session_state["media_alloc"].items()}
         st.json(optimal_alloc)
+
 
 
 
