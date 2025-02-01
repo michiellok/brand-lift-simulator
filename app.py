@@ -24,7 +24,7 @@ if "creative_effectiveness" not in st.session_state:
     st.session_state["creative_effectiveness"] = 0.7
 
 # Tabs maken
-tab1, tab2, tab3 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie"])
+tab1, tab2, tab3, tab4 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export"])
 
 # 1️⃣ Invoer tab
 with tab1:
@@ -84,6 +84,13 @@ with tab3:
     optimal_alloc = {k: round(v * 1.1, 2) for k, v in st.session_state["media_alloc"].items()}
     st.write("💡 Advies: Overweeg deze verdeling voor een betere brand lift:")
     st.json(optimal_alloc)
-    
     df_comparison = pd.DataFrame({"Huidige Allocatie": st.session_state["media_alloc"], "Geoptimaliseerde Allocatie": optimal_alloc})
     st.bar_chart(df_comparison)
+
+# 4️⃣ Export tab
+with tab4:
+    st.header("📂 Download Resultaten")
+    df_export = pd.DataFrame({"Kanaal": list(st.session_state["media_alloc"].keys()), "Huidige Allocatie": list(st.session_state["media_alloc"].values()), "Brand Lift": list(brand_lift_per_channel.values())})
+    csv = df_export.to_csv(index=False).encode('utf-8')
+    st.download_button("📥 Download als CSV", data=csv, file_name="brand_lift_results.csv", mime='text/csv')
+
