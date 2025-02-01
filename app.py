@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Titel van de app
-st.title("Brand Lift & Cross-Channel Optimization Simulator")
+st.title("Brand Lift Cross-Channel Simulator")
 st.subheader("Test verschillende mediaverdelingen en krijg een geoptimaliseerd advies")
 
 # 1️⃣ Campagne-instellingen
