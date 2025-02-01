@@ -24,10 +24,6 @@ if "creative_effectiveness" not in st.session_state:
     st.session_state["creative_effectiveness"] = 0.7
 
 # Tabs maken
-selected_tab = st.session_state["active_tab"]
-
-
-selected_tab = st.session_state["active_tab"]
 tab1, tab2, tab3 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie"])
 
 # 1️⃣ Invoer tab
@@ -62,10 +58,6 @@ with tab1:
             "Social": st.slider("Social (%)", 0, 100, 20),
             "CTV": st.slider("CTV (%)", 0, 100, 20),
         }
-        total_alloc = sum(media_alloc.values())
-        if total_alloc > 0 and total_alloc != 100:
-            scaling_factor = 100 / total_alloc
-            media_alloc = {key: round(value * scaling_factor, 2) for key, value in media_alloc.items()}
     else:
         media_alloc = {
             "Display": st.number_input("Display Budget (€)", min_value=0, max_value=budget, value=budget//5, step=100),
@@ -87,11 +79,11 @@ with tab2:
     st.header("🚀 Berekening van Brand Lift per Kanaal")
     if "media_alloc" in st.session_state:
         media_characteristics = {
-            "Display": {"attention": 0.6, "frequency": 3, "context_fit": 0.5},
-            "Video": {"attention": 0.8, "frequency": 5, "context_fit": 0.7},
-            "DOOH": {"attention": 0.7, "frequency": 2, "context_fit": 0.6},
-            "Social": {"attention": 0.75, "frequency": 4, "context_fit": 0.65},
-            "CTV": {"attention": 0.85, "frequency": 6, "context_fit": 0.8},
+            "Display": {"attention": 0.6, "frequency": 3},
+            "Video": {"attention": 0.8, "frequency": 5},
+            "DOOH": {"attention": 0.7, "frequency": 2},
+            "Social": {"attention": 0.75, "frequency": 4},
+            "CTV": {"attention": 0.85, "frequency": 6},
         }
         
         brand_lift_per_channel = {}
@@ -100,19 +92,17 @@ with tab2:
             brand_lift_per_channel[channel] = reach * media_characteristics[channel]["attention"]
         
         st.bar_chart(pd.DataFrame(brand_lift_per_channel, index=["Brand Lift"]).T)
+        
+        # Time Decay Chart
+        days = np.arange(1, 31)
+        decay_rates = {"Display": 0.1, "Video": 0.08, "DOOH": 0.06, "Social": 0.09, "CTV": 0.07}
+        decay_values = {channel: [lift * np.exp(-decay_rates[channel] * d) for d in days] for channel, lift in brand_lift_per_channel.items()}
+        df_decay = pd.DataFrame(decay_values, index=days)
+        st.line_chart(df_decay)
 
 # 3️⃣ Optimalisatie tab
 with tab3:
     st.header("🔍 Optimalisatie Advies")
     if "media_alloc" in st.session_state:
-        optimal_alloc = {k: v + 5 for k, v in st.session_state["media_alloc"].items()}
+        optimal_alloc = {k: min(v + 5, 100) for k, v in st.session_state["media_alloc"].items()}
         st.json(optimal_alloc)
-
-
-
-
-
-
-
-
-
