@@ -50,31 +50,36 @@ with tab1:
         total_budget_alloc = sum(media_alloc.values())
         if total_budget_alloc > budget:
             st.warning("⚠️ Het totaal toegewezen budget overschrijdt het campagnebudget!")
+    
+    # Next button to navigate to results
+    if st.button("Next →"):
+        st.session_state["show_results"] = True
 
 # 2️⃣ Resultaten tab
-with tab2:
-    st.header("🚀 Berekening van Brand Lift per Kanaal")
-    media_characteristics = {
-        "Display": {"attention": 0.6, "frequency": 3, "context_fit": 0.5},
-        "Video": {"attention": 0.8, "frequency": 5, "context_fit": 0.7},
-        "DOOH": {"attention": 0.7, "frequency": 2, "context_fit": 0.6},
-        "Social": {"attention": 0.75, "frequency": 4, "context_fit": 0.65},
-        "CTV": {"attention": 0.85, "frequency": 6, "context_fit": 0.8},
-    }
-    decay_rates = {"Display": 0.20, "Video": 0.10, "DOOH": 0.05, "Social": 0.15, "CTV": 0.08}
-    
-    brand_lift_per_channel = {}
-    for channel, alloc in media_alloc.items():
-        reach = (alloc / 100) * (budget / cpm) * min(campaign_duration / 30, 1)
-        frequency = media_characteristics[channel]["frequency"]
-        attention = media_characteristics[channel]["attention"]
-        context_fit = media_characteristics[channel]["context_fit"]
+if "show_results" in st.session_state and st.session_state["show_results"]:
+    with tab2:
+        st.header("🚀 Berekening van Brand Lift per Kanaal")
+        media_characteristics = {
+            "Display": {"attention": 0.6, "frequency": 3, "context_fit": 0.5},
+            "Video": {"attention": 0.8, "frequency": 5, "context_fit": 0.7},
+            "DOOH": {"attention": 0.7, "frequency": 2, "context_fit": 0.6},
+            "Social": {"attention": 0.75, "frequency": 4, "context_fit": 0.65},
+            "CTV": {"attention": 0.85, "frequency": 6, "context_fit": 0.8},
+        }
+        decay_rates = {"Display": 0.20, "Video": 0.10, "DOOH": 0.05, "Social": 0.15, "CTV": 0.08}
         
-        if frequency > frequency_cap:
-            frequency *= 0.75  # Frequency Cap effect
+        brand_lift_per_channel = {}
+        for channel, alloc in media_alloc.items():
+            reach = (alloc / 100) * (budget / cpm) * min(campaign_duration / 30, 1)
+            frequency = media_characteristics[channel]["frequency"]
+            attention = media_characteristics[channel]["attention"]
+            context_fit = media_characteristics[channel]["context_fit"]
+            
+            if frequency > frequency_cap:
+                frequency *= 0.75  # Frequency Cap effect
+            
+            brand_lift = min((0.4 * reach) + (0.3 * frequency) + (0.6 * attention) + (0.3 * context_fit) + (0.4 * creative_effectiveness), 100)
+            brand_lift_per_channel[channel] = brand_lift
         
-        brand_lift = min((0.4 * reach) + (0.3 * frequency) + (0.6 * attention) + (0.3 * context_fit) + (0.4 * creative_effectiveness), 100)
-        brand_lift_per_channel[channel] = brand_lift
-    
-    total_brand_lift = sum(brand_lift_per_channel.values())
-    st.metric(label="🚀 Totale Brand Lift", value=round(total_brand_lift, 2))
+        total_brand_lift = sum(brand_lift_per_channel.values())
+        st.metric(label="🚀 Totale Brand Lift", value=round(total_brand_lift, 2))
