@@ -33,10 +33,6 @@ total_alloc = sum(media_alloc.values())
 if total_alloc > 0 and total_alloc != 100:
     scaling_factor = 100 / total_alloc
     media_alloc = {key: round(value * scaling_factor, 2) for key, value in media_alloc.items()}
-    scaling_factor = 100 / total_alloc
-    media_alloc = {key: round(value * scaling_factor, 2) for key, value in media_alloc.items()}
-    media_alloc = {key: value * scaling_factor for key, value in media_alloc.items()}
-    st.sidebar.error("⚠️ De media-allocatie moet samen 100% zijn!")
 
 # Media kenmerken
 media_characteristics = {
@@ -48,6 +44,15 @@ media_characteristics = {
 }
 
 decay_rates = {"Display": 0.20, "Video": 0.10, "DOOH": 0.05, "Social": 0.15, "CTV": 0.08}
+
+# Historische gemiddelden van Brand Lift per kanaal
+historical_brand_lift = {
+    "Display": 8,
+    "Video": 12,
+    "DOOH": 10,
+    "Social": 9,
+    "CTV": 15,
+}
 
 # 4️⃣ Berekening van Brand Lift per kanaal
 st.write("### 🚀 Berekening van Brand Lift per Kanaal")
@@ -67,6 +72,16 @@ for channel, alloc in media_alloc.items():
 total_brand_lift = sum(brand_lift_per_channel.values())
 st.metric(label="🚀 Totale Brand Lift", value=round(total_brand_lift, 2))
 
+# Vergelijking met historische Brand Lift
+st.write("### 📊 Benchmarking met historische data")
+for channel, lift in brand_lift_per_channel.items():
+    historical_avg = historical_brand_lift[channel]
+    st.write(f"🔹 {channel}: Berekende Brand Lift = {round(lift, 2)} | Historisch Gemiddelde = {historical_avg}")
+    if lift > historical_avg * 1.5:
+        st.warning(f"⚠️ {channel} Brand Lift is veel hoger dan historisch gemiddeld! Controleer de invoerwaarden.")
+    elif lift < historical_avg * 0.5:
+        st.info(f"ℹ️ {channel} Brand Lift is lager dan normaal. Mogelijk suboptimale media-allocatie.")
+
 # 5️⃣ Optimalisatie Advies
 st.write("### 🔍 Geoptimaliseerde Media-Allocatie")
 optimal_alloc = {"Display": 15, "Video": 30, "DOOH": 15, "Social": 20, "CTV": 20}  # Eenvoudige optimalisatie
@@ -82,16 +97,3 @@ for channel, lift in brand_lift_per_channel.items():
 
 df_decay = pd.DataFrame(decay_values, index=days)
 st.line_chart(df_decay)
-
-# 7️⃣ Interpretatie van variabelen
-st.write("### 🔹 Interpretatie van variabelen en hoe ze invloed hebben")
-st.write("- 📊 **Totaal Budget**: Dit bepaalt de totale mediainzet. Hoe hoger het budget, hoe groter het potentiële bereik.")
-st.write("- ⏳ **Campagne Duur**: Een langere campagne kan zorgen voor een duurzamer effect, maar verhoogt ook de kans op advertentiemoeheid.")
-st.write("- 💰 **CPM (Cost per Mille)**: Dit bepaalt hoeveel het kost om 1000 mensen te bereiken. Een lagere CPM betekent een efficiënter budgetgebruik.")
-st.write("- 📉 **Time Decay**: Dit model laat zien hoe de impact afneemt naarmate de tijd verstrijkt. Dit is afhankelijk van het mediakanaal.")
-st.write("- ⚠️ **Ad Fatigue Threshold**: Als een advertentie te vaak wordt vertoond, kan dit de effectiviteit verlagen. Dit model houdt hier rekening mee.")
-st.write("- 🎨 **Creative Effectiveness**: Creativiteit heeft een directe invloed op de effectiviteit van de campagne. Een hogere score verhoogt de Brand Lift.")
-st.write("- 🎯 **KPI Focus (Awareness, Consideration, Preference, Intent)**: De gekozen KPI bepaalt hoe de mediakanalen het beste kunnen worden ingezet.")
-
-
-
