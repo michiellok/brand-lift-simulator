@@ -97,3 +97,4 @@ with tab3:
     
     df_decay = pd.DataFrame(decay_values, index=days)
     st.line_chart(df_decay)
+
