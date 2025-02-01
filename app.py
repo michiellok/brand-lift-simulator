@@ -30,8 +30,9 @@ media_alloc = {
 }
 
 total_alloc = sum(media_alloc.values())
-if total_alloc > 0:
+if total_alloc > 0 and total_alloc != 100:
     scaling_factor = 100 / total_alloc
+    media_alloc = {key: round(value * scaling_factor, 2) for key, value in media_alloc.items()}
     media_alloc = {key: value * scaling_factor for key, value in media_alloc.items()}
     st.sidebar.error("⚠️ De media-allocatie moet samen 100% zijn!")
 
@@ -89,4 +90,5 @@ st.write("- 📉 **Time Decay**: Dit model laat zien hoe de impact afneemt naarm
 st.write("- ⚠️ **Ad Fatigue Threshold**: Als een advertentie te vaak wordt vertoond, kan dit de effectiviteit verlagen. Dit model houdt hier rekening mee.")
 st.write("- 🎨 **Creative Effectiveness**: Creativiteit heeft een directe invloed op de effectiviteit van de campagne. Een hogere score verhoogt de Brand Lift.")
 st.write("- 🎯 **KPI Focus (Awareness, Consideration, Preference, Intent)**: De gekozen KPI bepaalt hoe de mediakanalen het beste kunnen worden ingezet.")
+
 
