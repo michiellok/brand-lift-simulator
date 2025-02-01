@@ -11,7 +11,7 @@ st.subheader("Test verschillende mediaverdelingen en krijg een geoptimaliseerd a
 st.sidebar.header("Campagne-instellingen")
 
 # Budget, looptijd en media-allocatie sliders
-budget = st.sidebar.slider("📊 Totaal Budget (in €)", 0, 1000000, 100, step=100)
+budget = st.sidebar.number_input("📊 Totaal Budget (in €)", min_value=0, max_value=1000000, value=100, step=100)
 campaign_duration = st.sidebar.slider("📅 Campagne Duur (dagen)", 1, 90, 7)
 
 # Extra variabelen
@@ -92,4 +92,3 @@ st.write("- De Time Decay-grafiek toont hoe de impact afneemt over de gekozen ca
 st.write("- Cost per Mille (CPM) beïnvloedt hoe ver je budget reikt.")
 st.write("- Ad Fatigue wordt meegenomen bij een te hoge frequentie.")
 st.write("- Target Audience Fit helpt bepalen hoe goed de media-inzet aansluit bij de doelgroep.")
-
