@@ -33,6 +33,8 @@ total_alloc = sum(media_alloc.values())
 if total_alloc > 0 and total_alloc != 100:
     scaling_factor = 100 / total_alloc
     media_alloc = {key: round(value * scaling_factor, 2) for key, value in media_alloc.items()}
+    scaling_factor = 100 / total_alloc
+    media_alloc = {key: round(value * scaling_factor, 2) for key, value in media_alloc.items()}
     media_alloc = {key: value * scaling_factor for key, value in media_alloc.items()}
     st.sidebar.error("⚠️ De media-allocatie moet samen 100% zijn!")
 
@@ -51,7 +53,7 @@ decay_rates = {"Display": 0.20, "Video": 0.10, "DOOH": 0.05, "Social": 0.15, "CT
 st.write("### 🚀 Berekening van Brand Lift per Kanaal")
 brand_lift_per_channel = {}
 for channel, alloc in media_alloc.items():
-    reach = (alloc / 100) * budget * campaign_duration / 7 * (10 / cpm)
+    reach = (alloc / 100) * (budget / cpm) * min(campaign_duration / 30, 1)
     frequency = media_characteristics[channel]["frequency"]
     attention = media_characteristics[channel]["attention"]
     context_fit = media_characteristics[channel]["context_fit"]
@@ -59,7 +61,7 @@ for channel, alloc in media_alloc.items():
     if frequency > ad_fatigue_threshold:
         frequency *= 0.75  # Ad Fatigue effect
     
-    brand_lift = (0.4 * reach) + (0.3 * frequency) + (0.6 * attention) + (0.3 * context_fit) + (0.4 * creative_effectiveness)
+    brand_lift = min((0.4 * reach) + (0.3 * frequency) + (0.6 * attention) + (0.3 * context_fit) + (0.4 * creative_effectiveness), 100)
     brand_lift_per_channel[channel] = brand_lift
 
 total_brand_lift = sum(brand_lift_per_channel.values())
@@ -90,5 +92,6 @@ st.write("- 📉 **Time Decay**: Dit model laat zien hoe de impact afneemt naarm
 st.write("- ⚠️ **Ad Fatigue Threshold**: Als een advertentie te vaak wordt vertoond, kan dit de effectiviteit verlagen. Dit model houdt hier rekening mee.")
 st.write("- 🎨 **Creative Effectiveness**: Creativiteit heeft een directe invloed op de effectiviteit van de campagne. Een hogere score verhoogt de Brand Lift.")
 st.write("- 🎯 **KPI Focus (Awareness, Consideration, Preference, Intent)**: De gekozen KPI bepaalt hoe de mediakanalen het beste kunnen worden ingezet.")
+
 
 
