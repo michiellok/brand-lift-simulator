@@ -87,6 +87,9 @@ with tab1:
     
     st.session_state["media_alloc"] = media_alloc
     
+    st.header("📡 Extra Variabelen")
+    st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
+    
     if st.button("Next →"):
         st.session_state["active_tab"] = "🚀 Resultaten"
         st.rerun()
@@ -112,4 +115,6 @@ with tab5:
         st.json(scenario_alloc)
     else:
         st.warning("⚠️ Geen media-allocatie beschikbaar. Ga naar 'Invoer' en stel een budget in.")
+
+
 
