@@ -1,15 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -48,10 +36,53 @@ if "ai_recommendations" not in st.session_state:
 if "total_brand_lift" not in st.session_state:
     st.session_state["total_brand_lift"] = 0
 
-# Tabs maken met Streamlit tabs in plaats van sidebar navigatie
+# Tabs maken met Streamlit tabs
 tabs = st.tabs(["📖 Uitleg", "📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export", "📈 Scenario's"])
 
-with tabs[3]:  # Optimalisatie
+# Uitleg Tab
+with tabs[0]:
+    st.header("📖 Uitleg van het Model")
+    st.markdown("""
+    Dit dashboard helpt bij het optimaliseren van Brand Lift door media-allocatie en budgetstrategieën te simuleren.
+    
+    **Hoe werkt dit model?**
+    - Het voorspelt de **Brand Lift** op basis van:
+      - **Reach**: Het aantal mensen dat bereikt wordt.
+      - **Frequency**: Hoe vaak een advertentie wordt gezien.
+      - **Attention**: De mate van aandacht voor een advertentie.
+      - **Creative Effectiveness**: Hoe sterk de advertentie visueel en inhoudelijk is.
+      - **Context Fit**: Hoe goed de advertentie past binnen de omgeving.
+      - **Budget**: Hoeveel er wordt geïnvesteerd in de campagne.
+      - **Campagne Looptijd**: De duur van de campagne beïnvloedt de impact.
+    
+    **Wat wordt berekend?**
+    - De totale **Brand Lift** (op basis van media-allocatie, budget en instellingen).
+    - Een **Brand Lift Index** (100 = industrienorm).
+    - AI-gestuurde aanbevelingen voor optimalisatie.
+    """)
+
+# Invoer Tab
+with tabs[1]:
+    st.header("📊 Campagne-instellingen")
+    st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
+    st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
+    st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
+    
+    st.header("📡 Kies Media Kanalen")
+    st.session_state["selected_channels"] = st.multiselect("Selecteer kanalen", ["Display", "Video", "DOOH", "Social", "CTV"], default=st.session_state["selected_channels"])
+    
+    st.header("📡 Media Allocatie")
+    media_alloc = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in st.session_state["selected_channels"]}
+    st.session_state["media_alloc"] = media_alloc
+
+# Resultaten Tab
+with tabs[2]:
+    st.header("🚀 Resultaten en Analyse")
+    st.metric(label="Totale Brand Lift", value=st.session_state["total_brand_lift"])
+    st.metric(label="📊 Brand Lift Index", value=f"{st.session_state["brand_lift_index"]} (100 = industrienorm)")
+
+# Optimalisatie Tab
+with tabs[3]:
     st.header("🔍 AI-gestuurde Optimalisatie Advies")
     if st.session_state["ai_recommendations"]:
         st.json(st.session_state["ai_recommendations"])
@@ -62,4 +93,17 @@ with tabs[3]:  # Optimalisatie
         st.session_state["media_alloc"][channel] = st.number_input(f"{channel} Budget (handmatig aanpassen in €)", min_value=0, max_value=st.session_state["budget"], value=st.session_state["media_alloc"].get(channel, 0), step=100)
     
     st.markdown("Nadat je de aanpassingen hebt gemaakt, bekijk je de resultaten in de resultaten-tab.")
+
+# Export Tab
+with tabs[4]:
+    st.header("📂 Export Resultaten")
+    df_export = pd.DataFrame(st.session_state["media_alloc"], index=[0])
+    st.download_button("Download als CSV", df_export.to_csv(), "brand_lift_results.csv")
+
+# Scenario Tab
+with tabs[5]:
+    st.header("📈 Scenario Analyse")
+    st.write("Werkende scenario's worden hier weergegeven.")
+
+
 
