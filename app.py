@@ -29,34 +29,6 @@ for key, value in default_values.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
-# 📊 Campagne-instellingen Tab
-with tab1:
-    st.header("📊 Campagne-instellingen")
-    st.write("Hier stel je de kernparameters van je campagne in.")
-    st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
-    st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
-    st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
-    st.session_state["cpm"] = st.number_input("CPM (Kosten per 1000 impressies in €)", min_value=1, max_value=1000, value=st.session_state["cpm"], step=1)
-    
-    st.header("📡 Media Allocatie")
-    for channel in st.session_state["selected_channels"]:
-        if st.session_state["selected_channels"][channel]:
-            st.session_state["media_alloc"][channel] = st.slider(f"{channel} Allocatie (%)", 0, 100, st.session_state["media_alloc"].get(channel, 20))
-    
-    if st.button("Bereken Brand Lift"):
-        bereken_brand_lift()
-
-# 🚀 Resultaten en Analyse Tab
-with tab2:
-    st.header("🚀 Resultaten en Analyse")
-    st.metric(label="Geschatte Reach", value=int(st.session_state["reach"]))
-    st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
-    fig, ax = plt.subplots()
-    ax.barh(["Brand Lift"], [st.session_state["total_brand_lift"]], color='skyblue')
-    ax.set_xlabel("Brand Lift Score")
-    ax.set_title("Brand Lift Overzicht")
-    st.pyplot(fig)
-
 # 📖 Hoe werkt dit model? Tab
 with tab3:
     st.header("📖 Hoe werkt dit model?")
@@ -88,6 +60,19 @@ with tab3:
     
     Dit betekent dat de campagne naar verwachting een gemiddelde Brand Lift van **3.55** zal genereren.
     """)
+    
+    st.subheader("🚧 Wat mist dit model nog?")
+    st.write("Hoewel dit model een eerste versie is en een goed startpunt biedt, mist het nog enkele belangrijke aspecten die in latere versies kunnen worden toegevoegd:")
+    st.markdown("""
+    - **Geen gebruik van historische data**: Het model voorspelt Brand Lift op basis van statische invoer, maar leert niet van eerdere campagnes.
+    - **Geen brand metrics-data**: Factoren zoals merkbekendheid, overweging en intentie worden niet meegenomen.
+    - **Geen differentiatie per kanaal**: Momenteel heeft elk kanaal dezelfde gewichten en invloed, terwijl in werkelijkheid CTV bijvoorbeeld een andere impact kan hebben dan Social.
+    - **Geen cross-channel interacties**: Het model kijkt niet naar hoe kanalen elkaar beïnvloeden (synergie-effecten).
+    - **Geen optimalisatie-algoritme**: Er is nog geen geautomatiseerde aanbeveling voor de beste budgetverdeling.
+    
+    Dit zijn verbeterpunten die in toekomstige versies kunnen worden opgenomen!
+    """)
     st.write("Gebruik de andere tabs om je eigen campagne te simuleren!")
 
 st.write("\n**Eerste versie van het model. Toekomstige iteraties zullen validatie en optimalisatie bevatten.**")
+
