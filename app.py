@@ -69,37 +69,24 @@ if st.session_state["media_alloc"]:
 # Tabs maken
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export", "📈 Scenario's"])
 
-# 1️⃣ Invoer tab
-with tab1:
-    st.header("📊 Campagne-instellingen")
-    st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
-    st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
-    
-    st.header("📡 Kies Media Kanalen")
-    st.session_state["selected_channels"] = st.multiselect("Selecteer kanalen", ["Display", "Video", "DOOH", "Social", "CTV"], default=st.session_state["selected_channels"])
-    
-    st.header("📡 Media Allocatie")
-    allocation_type = st.radio("Kies allocatiemethode:", ["Percentage", "Budget (€)"])
-    
-    if allocation_type == "Percentage":
-        media_alloc = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in st.session_state["selected_channels"]}
-    else:
-        media_alloc = {channel: st.number_input(f"{channel} Budget (€)", min_value=0, max_value=st.session_state["budget"], value=st.session_state["budget"]//5, step=100) for channel in st.session_state["selected_channels"]}
-    
-    st.session_state["media_alloc"] = media_alloc
-    
-    st.header("📡 Extra Variabelen")
-    st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
-    
-    if st.button("Next →"):
-        st.session_state["active_tab"] = "🚀 Resultaten"
-        st.rerun()
-
 # 2️⃣ Resultaten tab
 with tab2:
     st.header("🚀 Resultaten en Analyse")
     st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
     st.metric(label="📊 Brand Lift Index", value=f"{st.session_state["brand_lift_index"]} (100 = industrienorm)")
+    
+    # Analyse en aanbevelingen
+    if st.session_state["brand_lift_index"] < 90:
+        st.warning("⚠️ De Brand Lift is lager dan de industrienorm. Overweeg de volgende verbeteringen:")
+        st.markdown("- **Verhoog de budgetallocatie** naar kanalen met een hogere effectiviteit.")
+        st.markdown("- **Optimaliseer de frequency cap** om herhaalde blootstelling te maximaliseren.")
+        st.markdown("- **Verbeter de creatieve effectiviteit** voor meer impact op merkherinnering.")
+    elif st.session_state["brand_lift_index"] > 110:
+        st.success("✅ De Brand Lift presteert boven de industrienorm! Overweeg de volgende stappen:")
+        st.markdown("- **Analyseer welke kanalen het beste presteren** en schaal deze verder op.")
+        st.markdown("- **Experimenteer met nieuwe allocaties** om de prestaties nog verder te verhogen.")
+    else:
+        st.info("ℹ️ De Brand Lift is in lijn met de industrienorm. Monitor de prestaties en test verdere optimalisaties.")
     
     # Grafiek toevoegen
     fig, ax = plt.subplots()
@@ -113,13 +100,7 @@ with tab3:
     if st.session_state["ai_recommendations"]:
         st.json(st.session_state["ai_recommendations"])
 
-# 5️⃣ Scenario-analyse tab
-with tab5:
-    st.header("📈 Scenario Analyse")
-    if st.session_state["media_alloc"]:
-        scenario_budget = st.slider("Extra Budget (% verhoging)", 0, 100, 10)
-        scenario_alloc = {k: round(v * (1 + scenario_budget / 100), 2) for k, v in st.session_state["media_alloc"].items()}
-        st.json(scenario_alloc)
+
 
 
 
