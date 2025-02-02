@@ -59,7 +59,9 @@ with tab2:
     brand_lift_per_channel = {}
     for channel, alloc in st.session_state["media_alloc"].items():
         reach = (alloc / 100) * (st.session_state["budget"] / st.session_state["cpm"]) * min(st.session_state["campaign_duration"] / 30, 1)
-        brand_lift = reach * media_characteristics[channel]["attention"]
+        brand_lift = reach * media_characteristics[channel]["attention"] * st.session_state["creative_effectiveness"]
+        # Simuleer verzadiging: effectiviteit neemt af bij hogere frequenties
+        brand_lift *= (1 - np.exp(-media_characteristics[channel]["frequency"] / st.session_state["frequency_cap"]))
         brand_lift_per_channel[channel] = round(brand_lift, 2)
     
     st.metric(label="🚀 Totale Brand Lift", value=round(sum(brand_lift_per_channel.values()), 2))
@@ -79,3 +81,4 @@ with tab4:
     df_export = pd.DataFrame({"Kanaal": list(st.session_state["media_alloc"].keys()), "Huidige Allocatie": list(st.session_state["media_alloc"].values()), "Brand Lift": list(brand_lift_per_channel.values())})
     csv = df_export.to_csv(index=False).encode('utf-8')
     st.download_button("📥 Download als CSV", data=csv, file_name="brand_lift_results.csv", mime='text/csv')
+
