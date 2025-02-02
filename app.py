@@ -46,6 +46,14 @@ with tab1:
         st.rerun()
 
 # 2️⃣ Resultaten tab
+    
+    # Time Decay Berekening en Grafiek
+    st.header("📉 Time Decay van Brand Lift")
+    days = np.arange(1, st.session_state["campaign_duration"] + 1)
+    decay_rates = {"Display": 0.1, "Video": 0.08, "DOOH": 0.06, "Social": 0.09, "CTV": 0.07}
+    decay_values = {channel: [brand_lift_per_channel[channel] * np.exp(-decay_rates[channel] * d) for d in days] for channel in brand_lift_per_channel}
+    df_decay = pd.DataFrame(decay_values, index=days)
+    st.line_chart(df_decay)
 with tab2:
     st.header("🚀 Berekening van Brand Lift per Kanaal")
     media_characteristics = {
@@ -81,4 +89,5 @@ with tab4:
     df_export = pd.DataFrame({"Kanaal": list(st.session_state["media_alloc"].keys()), "Huidige Allocatie": list(st.session_state["media_alloc"].values()), "Brand Lift": list(brand_lift_per_channel.values())})
     csv = df_export.to_csv(index=False).encode('utf-8')
     st.download_button("📥 Download als CSV", data=csv, file_name="brand_lift_results.csv", mime='text/csv')
+
 
