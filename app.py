@@ -4,23 +4,20 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Titel van de app
-st.title("Brand Lift & Cross-Channel Optimization Dashboard")
-st.subheader("Simuleer en optimaliseer jouw media-allocatie voor maximale impact")
+st.title("Brand Lift & Cross-Channel Optimization - Fase 1")
+st.subheader("Simuleer en analyseer je media-allocatie voor maximale impact")
 
 # Initialiseer session state met standaardwaarden indien niet aanwezig
 default_values = {
-    "active_tab": "📖 Uitleg",
-    "media_alloc": {},
     "budget": 10000,
     "campaign_duration": 30,
-    "cpm": 10,
     "frequency_cap": 10,
     "creative_effectiveness": 0.7,
     "context_fit": 0.5,
+    "reach": 1000000,
+    "attention": 0.6,
     "selected_channels": ["Display", "Video", "DOOH", "Social", "CTV"],
     "brand_lift_per_channel": {},
-    "brand_lift_index": 100,
-    "ai_recommendations": {},
     "total_brand_lift": 0
 }
 
@@ -28,105 +25,38 @@ for key, value in default_values.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
-# Tabs maken met Streamlit
-tabs = st.tabs(["📖 Uitleg", "📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export", "📈 Scenario's"])
-
-# Functie om Brand Lift te berekenen
+# Berekening van Brand Lift
 def bereken_brand_lift():
-    if not st.session_state["media_alloc"]:
-        st.session_state["total_brand_lift"] = 0
-        return
-
-    base_lift = (st.session_state["budget"] / 10000) * 5  # Basis impact per 10k budget
-    attention_factor = st.session_state["creative_effectiveness"] * 2
-    frequency_factor = st.session_state["frequency_cap"] * 0.1
-    lift_per_channel = {}
-
-    for channel, alloc in st.session_state["media_alloc"].items():
-        if alloc > 0:
-            channel_lift = base_lift * (alloc / 100) * attention_factor * frequency_factor
-        else:
-            channel_lift = 0
-        lift_per_channel[channel] = channel_lift
-
-    st.session_state["brand_lift_per_channel"] = lift_per_channel
-    st.session_state["total_brand_lift"] = sum(lift_per_channel.values())
-
-# Uitleg Tab
-with tabs[0]:
-    st.header("📖 Uitleg")
-    st.write("""
-    Welkom bij het Brand Lift & Cross-Channel Optimization Dashboard. Met deze tool kun je de impact van je mediacampagnes simuleren en optimaliseren over verschillende kanalen.
-    Gebruik de 'Invoer' tab om je campagne-instellingen te specificeren, en bekijk de resultaten en optimalisaties in de respectievelijke tabs.
-    """)
+    base_lift = (st.session_state["reach"] / 1_000_000) * 0.4
+    frequency_factor = st.session_state["frequency_cap"] * 0.3
+    attention_factor = st.session_state["attention"] * 0.6
+    creative_factor = st.session_state["creative_effectiveness"] * 0.4
+    context_factor = st.session_state["context_fit"] * 0.3
+    
+    total_lift = base_lift + frequency_factor + attention_factor + creative_factor + context_factor
+    st.session_state["total_brand_lift"] = total_lift
 
 # Invoer Tab
-with tabs[1]:
-    st.header("📊 Campagne-instellingen")
-    st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
-    st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
-    st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
+st.header("📊 Campagne-instellingen")
+st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
+st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
+st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
+st.session_state["reach"] = st.number_input("Geschatte Reach", min_value=1000, max_value=100000000, value=st.session_state["reach"], step=1000)
+st.session_state["attention"] = st.slider("Attention Score (0 - 1)", 0.0, 1.0, st.session_state["attention"], step=0.01)
+st.session_state["creative_effectiveness"] = st.slider("Creative Effectiveness (0 - 1)", 0.0, 1.0, st.session_state["creative_effectiveness"], step=0.01)
+st.session_state["context_fit"] = st.slider("Context Fit (0 - 1)", 0.0, 1.0, st.session_state["context_fit"], step=0.01)
 
-    st.header("📡 Kies Media Kanalen")
-    st.session_state["selected_channels"] = st.multiselect("Selecteer kanalen", ["Display", "Video", "DOOH", "Social", "CTV"], default=st.session_state["selected_channels"])
+if st.button("Bereken Brand Lift"):
+    bereken_brand_lift()
 
-    st.header("📡 Media Allocatie")
-    st.session_state["media_alloc"] = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in st.session_state["selected_channels"]}
+# Resultaten Weergave
+st.header("🚀 Resultaten en Analyse")
+st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
 
-    if st.button("Bereken Brand Lift"):
-        bereken_brand_lift()
+fig, ax = plt.subplots()
+ax.barh(["Brand Lift"], [st.session_state["total_brand_lift"]], color='skyblue')
+ax.set_xlabel("Brand Lift Score")
+ax.set_title("Brand Lift Overzicht")
+st.pyplot(fig)
 
-# Resultaten Tab
-with tabs[2]:
-    st.header("🚀 Resultaten en Analyse")
-    if st.session_state["total_brand_lift"] == 0:
-        st.write("Geen resultaten beschikbaar. Vul de campagne-instellingen in en genereer de Brand Lift.")
-    else:
-        st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
-        st.write("De Brand Lift wordt berekend op basis van de gekozen instellingen. Gebruik de optimalisatie-tab om betere resultaten te krijgen.")
-
-        fig, ax = plt.subplots()
-        channels = list(st.session_state["brand_lift_per_channel"].keys())
-        lifts = list(st.session_state["brand_lift_per_channel"].values())
-        ax.barh(channels, lifts, color='skyblue')
-        ax.set_xlabel("Brand Lift Score")
-        ax.set_title("Brand Lift per Kanaal")
-        st.pyplot(fig)
-
-# Optimalisatie Tab
-with tabs[3]:
-    st.header("🔍 AI-gestuurde Optimalisatie Advies")
-    if st.session_state["total_brand_lift"] > 0:
-        st.write("Op basis van de ingevoerde waarden wordt hier een aanbeveling weergegeven.")
-        st.json(st.session_state["ai_recommendations"])
-    else:
-        st.write("Geen data beschikbaar voor optimalisatie. Bereken eerst de Brand Lift.")
-
-# Export Tab
-with tabs[4]:
-    st.header("📂 Export")
-    if st.session_state["total_brand_lift"] > 0:
-        df = pd.DataFrame.from_dict(st.session_state["brand_lift_per_channel"], orient='index', columns=['Brand Lift'])
-        csv = df.to_csv().encode('utf-8')
-        st.download_button(
-            label="Download resultaten als CSV",
-            data=csv,
-            file_name='brand_lift_resultaten.csv',
-            mime='text/csv',
-        )
-    else:
-        st.write("Geen gegevens beschikbaar om te exporteren. Bereken eerst de Brand Lift.")
-
-# Scenario's Tab
-with tabs[5]:
-    st.header("📈 Scenario Analyse")
-    if st.session_state["total_brand_lift"] > 0:
-        st.write("Experimenteer met verschillende budgetten en frequenties om de optimale strategie te vinden.")
-    else:
-        st.write("Geen gegevens beschikbaar voor scenario-analyse. Bereken eerst de Brand Lift.")
-
-
-
-
-
-
+st.write("\n**Eerste versie van het model. Toekomstige iteraties zullen validatie en optimalisatie bevatten.**")
