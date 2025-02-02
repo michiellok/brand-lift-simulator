@@ -53,14 +53,6 @@ with tab1:
         st.rerun()
 
 # 2️⃣ Resultaten tab
-    
-    # Benchmark gemiddelde Brand Lift
-    avg_brand_lift = 100  # Normwaarde gebaseerd op industriestandaarden
-    
-    st.header("📊 Benchmarking: Brand Lift Index")
-    brand_lift_index = round((sum(brand_lift_per_channel.values()) / avg_brand_lift) * 100, 2)
-    st.metric(label="📈 Brand Lift Index", value=f"{brand_lift_index} (100 = industrienorm)")
-    st.write("De Brand Lift Index vergelijkt de berekende uplift met een industriestandaard. Een waarde boven de 100 betekent dat de campagne beter presteert dan gemiddeld.")
 with tab2:
     st.header("🚀 Berekening van Brand Lift per Kanaal")
     media_characteristics = {
@@ -81,29 +73,14 @@ with tab2:
     st.metric(label="🚀 Totale Brand Lift", value=round(sum(brand_lift_per_channel.values()), 2))
     st.bar_chart(pd.DataFrame(brand_lift_per_channel, index=["Brand Lift"]).T)
     
-# 3️⃣ Optimalisatie tab
-with tab3:
-    st.header("🔍 Optimalisatie Advies")
-    optimal_alloc = {k: round(v * 1.1, 2) for k, v in st.session_state["media_alloc"].items()}
-    st.json(optimal_alloc)
-    df_comparison = pd.DataFrame({"Huidige Allocatie": st.session_state["media_alloc"], "Geoptimaliseerde Allocatie": optimal_alloc})
-    st.bar_chart(df_comparison)
+    # Benchmark gemiddelde Brand Lift
+    avg_brand_lift = 100  # Normwaarde gebaseerd op industriestandaarden
+    brand_lift_index = round((sum(brand_lift_per_channel.values()) / avg_brand_lift) * 100, 2)
+    
+    st.header("📊 Benchmarking: Brand Lift Index")
+    st.metric(label="📈 Brand Lift Index", value=f"{brand_lift_index} (100 = industrienorm)")
+    st.write("De Brand Lift Index vergelijkt de berekende uplift met een industriestandaard. Een waarde boven de 100 betekent dat de campagne beter presteert dan gemiddeld.")
 
-# 4️⃣ Scenario-analyse tab
-with tab5:
-    st.header("📈 Scenario Analyse")
-    scenario_budget = st.slider("Extra Budget (% verhoging)", 0, 100, 10)
-    scenario_alloc = {k: round(v * (1 + scenario_budget / 100), 2) for k, v in st.session_state["media_alloc"].items()}
-    st.json(scenario_alloc)
-    df_scenario = pd.DataFrame({"Huidige Allocatie": st.session_state["media_alloc"], "Scenario Allocatie": scenario_alloc})
-    st.bar_chart(df_scenario)
-
-# 5️⃣ Export tab
-with tab4:
-    st.header("📂 Download Resultaten")
-    df_export = pd.DataFrame({"Kanaal": list(st.session_state["media_alloc"].keys()), "Huidige Allocatie": list(st.session_state["media_alloc"].values()), "Brand Lift": list(brand_lift_per_channel.values())})
-    csv = df_export.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Download als CSV", data=csv, file_name="brand_lift_results.csv", mime='text/csv')
 
 
 
