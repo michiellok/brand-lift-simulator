@@ -53,6 +53,14 @@ with tab1:
         st.rerun()
 
 # 2️⃣ Resultaten tab
+    
+    # Benchmark gemiddelde Brand Lift
+    avg_brand_lift = 100  # Normwaarde gebaseerd op industriestandaarden
+    
+    st.header("📊 Benchmarking: Brand Lift Index")
+    brand_lift_index = round((sum(brand_lift_per_channel.values()) / avg_brand_lift) * 100, 2)
+    st.metric(label="📈 Brand Lift Index", value=f"{brand_lift_index} (100 = industrienorm)")
+    st.write("De Brand Lift Index vergelijkt de berekende uplift met een industriestandaard. Een waarde boven de 100 betekent dat de campagne beter presteert dan gemiddeld.")
 with tab2:
     st.header("🚀 Berekening van Brand Lift per Kanaal")
     media_characteristics = {
@@ -96,6 +104,7 @@ with tab4:
     df_export = pd.DataFrame({"Kanaal": list(st.session_state["media_alloc"].keys()), "Huidige Allocatie": list(st.session_state["media_alloc"].values()), "Brand Lift": list(brand_lift_per_channel.values())})
     csv = df_export.to_csv(index=False).encode('utf-8')
     st.download_button("📥 Download als CSV", data=csv, file_name="brand_lift_results.csv", mime='text/csv')
+
 
 
 
