@@ -53,9 +53,11 @@ if tab_selection == "📖 Uitleg":
       - **Attention**: De mate van aandacht voor een advertentie.
       - **Creative Effectiveness**: Hoe sterk de advertentie visueel en inhoudelijk is.
       - **Context Fit**: Hoe goed de advertentie past binnen de omgeving.
+      - **Budget**: Hoeveel er wordt geïnvesteerd in de campagne.
+      - **Campagne Looptijd**: De duur van de campagne beïnvloedt de impact.
     
     **Wat wordt berekend?**
-    - De totale **Brand Lift** (op basis van media-allocatie en instellingen).
+    - De totale **Brand Lift** (op basis van media-allocatie, budget en instellingen).
     - Een **Brand Lift Index** (100 = industrienorm).
     - AI-gestuurde aanbevelingen voor optimalisatie.
     
@@ -87,37 +89,25 @@ if tab_selection == "📊 Invoer":
 # Resultaten tab
 if tab_selection == "🚀 Resultaten":
     st.header("🚀 Resultaten en Analyse")
-    st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
+    # Berekening van de totale Brand Lift met budget en looptijd als invloed
+    st.session_state["total_brand_lift"] = round(
+        sum(st.session_state["media_alloc"].values()) *
+        (st.session_state["budget"] / 10000) *
+        (st.session_state["campaign_duration"] / 30) *
+        (st.session_state["frequency_cap"] / 10) *
+        st.session_state["creative_effectiveness"] *
+        st.session_state["context_fit"], 2
+    )
+    st.metric(label="Totale Brand Lift", value=st.session_state["total_brand_lift"])
     st.metric(label="📊 Brand Lift Index", value=f"{st.session_state["brand_lift_index"]} (100 = industrienorm)")
-    
-    # Analyse en aanbevelingen
-    if st.session_state["brand_lift_index"] < 90:
-        st.warning("⚠️ De Brand Lift is lager dan de industrienorm. Overweeg de volgende verbeteringen:")
-        st.markdown("- **Verhoog de budgetallocatie** naar kanalen met een hogere effectiviteit.")
-        st.markdown("- **Optimaliseer de frequency cap** om herhaalde blootstelling te maximaliseren.")
-        st.markdown("- **Verbeter de creatieve effectiviteit** voor meer impact op merkherinnering.")
-    elif st.session_state["brand_lift_index"] > 110:
-        st.success("✅ De Brand Lift presteert boven de industrienorm! Overweeg de volgende stappen:")
-        st.markdown("- **Analyseer welke kanalen het beste presteren** en schaal deze verder op.")
-        st.markdown("- **Experimenteer met nieuwe allocaties** om de prestaties nog verder te verhogen.")
-    else:
-        st.info("ℹ️ De Brand Lift is in lijn met de industrienorm. Monitor de prestaties en test verdere optimalisaties.")
-    
+
     # Grafiek toevoegen
     fig, ax = plt.subplots()
     ax.bar(st.session_state["brand_lift_per_channel"].keys(), st.session_state["brand_lift_per_channel"].values())
     ax.set_title("Brand Lift per Kanaal")
     st.pyplot(fig)
 
-# Optimalisatie tab
-if tab_selection == "🔍 Optimalisatie":
-    st.header("🔍 AI-gestuurde Optimalisatie Advies")
-    if st.session_state["ai_recommendations"]:
-        st.json(st.session_state["ai_recommendations"])
-    
-    st.header("🔧 Handmatige Aanpassing")
-    for channel in st.session_state["selected_channels"]:
-        st.session_state["media_alloc"][channel] = st.number_input(f"{channel} Budget (handmatig aanpassen in €)", min_value=0, max_value=st.session_state["budget"], value=st.session_state["media_alloc"].get(channel, 0), step=100)
+
 
 
 
