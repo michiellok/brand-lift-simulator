@@ -39,6 +39,11 @@ if "total_brand_lift" not in st.session_state:
 # Tabs maken met Streamlit tabs
 tabs = st.tabs(["📖 Uitleg", "📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export", "📈 Scenario's"])
 
+# Uitleg Tab
+with tabs[0]:
+    st.header("📖 Uitleg van het Model")
+    st.write("Dit model voorspelt de Brand Lift op basis van verschillende factoren zoals budget, kanaalallocatie, aandacht en creatieve effectiviteit. Het doel is om mediabureaus en adverteerders te helpen bij het optimaliseren van hun media-inzet.")
+
 # Invoer Tab
 with tabs[1]:
     st.header("📊 Campagne-instellingen")
@@ -52,6 +57,12 @@ with tabs[1]:
     st.header("📡 Media Allocatie")
     media_alloc = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in st.session_state["selected_channels"]}
     st.session_state["media_alloc"] = media_alloc
+
+# Resultaten Tab
+with tabs[2]:
+    st.header("🚀 Resultaten en Analyse")
+    st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
+    st.write("De Brand Lift wordt berekend op basis van de gekozen instellingen. Gebruik de optimalisatie-tab om betere resultaten te krijgen.")
 
 # Optimalisatie Tab
 with tabs[3]:
@@ -76,6 +87,8 @@ with tabs[4]:
 with tabs[5]:
     st.header("📈 Scenario Analyse")
     st.write("Werkende scenario's worden hier weergegeven.")
+
+
 
 
 
