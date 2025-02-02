@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import random
+import matplotlib.pyplot as plt
 
 # Titel van de app
 st.title("Brand Lift & Cross-Channel Optimization Dashboard")
@@ -99,6 +100,12 @@ with tab2:
     st.header("🚀 Resultaten en Analyse")
     st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
     st.metric(label="📊 Brand Lift Index", value=f"{st.session_state["brand_lift_index"]} (100 = industrienorm)")
+    
+    # Grafiek toevoegen
+    fig, ax = plt.subplots()
+    ax.bar(st.session_state["brand_lift_per_channel"].keys(), st.session_state["brand_lift_per_channel"].values())
+    ax.set_title("Brand Lift per Kanaal")
+    st.pyplot(fig)
 
 # 3️⃣ Optimalisatie tab
 with tab3:
@@ -113,8 +120,8 @@ with tab5:
         scenario_budget = st.slider("Extra Budget (% verhoging)", 0, 100, 10)
         scenario_alloc = {k: round(v * (1 + scenario_budget / 100), 2) for k, v in st.session_state["media_alloc"].items()}
         st.json(scenario_alloc)
-    else:
-        st.warning("⚠️ Geen media-allocatie beschikbaar. Ga naar 'Invoer' en stel een budget in.")
+
+
 
 
 
