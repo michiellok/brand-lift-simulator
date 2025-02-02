@@ -14,8 +14,6 @@ default_values = {
     "frequency_cap": 10,
     "creative_effectiveness": 0.7,
     "context_fit": 0.5,
-    "reach": 1000000,
-    "attention": 0.6,
     "cpm": 10,
     "selected_channels": {"CTV": True, "Social": True, "Video": True, "Display": True, "DOOH": True},
     "brand_lift_per_channel": {},
@@ -26,8 +24,19 @@ for key, value in default_values.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
+# Berekening van Reach op basis van budget en CPM
+def bereken_reach():
+    total_active_channels = sum(1 for active in st.session_state["selected_channels"].values() if active)
+    if total_active_channels > 0:
+        budget_per_channel = st.session_state["budget"] / total_active_channels
+        reach_per_channel = (budget_per_channel / st.session_state["cpm"]) * 1000  # CPM is per 1000 impressies
+        st.session_state["reach"] = reach_per_channel * total_active_channels
+    else:
+        st.session_state["reach"] = 0
+
 # Berekening van Brand Lift
 def bereken_brand_lift():
+    bereken_reach()
     base_lift = (st.session_state["reach"] / 1_000_000) * 0.4
     frequency_factor = st.session_state["frequency_cap"] * 0.3
     attention_factor = st.session_state["attention"] * 0.6
@@ -43,10 +52,6 @@ st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value
 st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
 st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
 st.session_state["cpm"] = st.number_input("CPM (Kosten per 1000 impressies in €)", min_value=1, max_value=1000, value=st.session_state["cpm"], step=1)
-st.session_state["reach"] = st.number_input("Geschatte Reach", min_value=1000, max_value=100000000, value=st.session_state["reach"], step=1000)
-st.session_state["attention"] = st.slider("Attention Score (0 - 1)", 0.0, 1.0, st.session_state["attention"], step=0.01)
-st.session_state["creative_effectiveness"] = st.slider("Creative Effectiveness (0 - 1)", 0.0, 1.0, st.session_state["creative_effectiveness"], step=0.01)
-st.session_state["context_fit"] = st.slider("Context Fit (0 - 1)", 0.0, 1.0, st.session_state["context_fit"], step=0.01)
 
 st.header("📡 Media Kanalen")
 for channel in st.session_state["selected_channels"]:
@@ -57,6 +62,7 @@ if st.button("Bereken Brand Lift"):
 
 # Resultaten Weergave
 st.header("🚀 Resultaten en Analyse")
+st.metric(label="Geschatte Reach", value=int(st.session_state["reach"]))
 st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
 
 fig, ax = plt.subplots()
@@ -66,4 +72,3 @@ ax.set_title("Brand Lift Overzicht")
 st.pyplot(fig)
 
 st.write("\n**Eerste versie van het model. Toekomstige iteraties zullen validatie en optimalisatie bevatten.**")
-
