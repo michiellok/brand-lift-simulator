@@ -32,6 +32,8 @@ if "brand_lift_index" not in st.session_state:
     st.session_state["brand_lift_index"] = 100
 if "ai_recommendations" not in st.session_state:
     st.session_state["ai_recommendations"] = {}
+if "total_brand_lift" not in st.session_state:
+    st.session_state["total_brand_lift"] = 0
 
 # Dummy data voor validatie
 def generate_dummy_data():
@@ -54,8 +56,8 @@ if st.session_state["media_alloc"]:
                        (st.session_state["budget"] / 10000), 2)
         for channel in st.session_state["media_alloc"]
     }
-    total_brand_lift = sum(st.session_state["brand_lift_per_channel"].values())
-    st.session_state["brand_lift_index"] = round((total_brand_lift / industry_norm) * 100, 2)
+    st.session_state["total_brand_lift"] = sum(st.session_state["brand_lift_per_channel"].values())
+    st.session_state["brand_lift_index"] = round((st.session_state["total_brand_lift"] / industry_norm) * 100, 2)
 
 # AI-gestuurde optimalisatie
 if st.session_state["media_alloc"]:
@@ -92,7 +94,7 @@ with tab1:
 # 2️⃣ Resultaten tab
 with tab2:
     st.header("🚀 Resultaten en Analyse")
-    st.metric(label="Totale Brand Lift", value=round(total_brand_lift, 2))
+    st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
     st.metric(label="📊 Brand Lift Index", value=f"{st.session_state["brand_lift_index"]} (100 = industrienorm)")
 
 # 3️⃣ Optimalisatie tab
