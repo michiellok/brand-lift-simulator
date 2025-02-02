@@ -58,8 +58,6 @@ with tab2:
     ax.set_title("Brand Lift Overzicht")
     st.pyplot(fig)
 
-  st.write("\n**Eerste versie van het model. Toekomstige iteraties zullen validatie en optimalisatie bevatten.**")
-
   # 📖 Hoe werkt dit model? Tab
 with tab3:
     st.header("📖 Hoe werkt dit model?")
@@ -91,5 +89,5 @@ with tab3:
     
     Dit betekent dat de campagne naar verwachting een gemiddelde Brand Lift van **3.55** zal genereren.
     """)
-
-
+    
+  st.write("\n**Eerste versie van het model. Toekomstige iteraties zullen validatie en optimalisatie bevatten.**")
