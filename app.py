@@ -10,7 +10,7 @@ st.subheader("Simuleer en optimaliseer jouw media-allocatie voor maximale impact
 
 # Initialiseer session state
 if "active_tab" not in st.session_state:
-    st.session_state["active_tab"] = "📊 Invoer"
+    st.session_state["active_tab"] = "📖 Uitleg"
 if "media_alloc" not in st.session_state:
     st.session_state["media_alloc"] = {}
 if "budget" not in st.session_state:
@@ -38,79 +38,37 @@ if "total_brand_lift" not in st.session_state:
 
 # Tabs maken, altijd zichtbaar
 st.sidebar.title("Navigatie")
-tab_selection = st.sidebar.radio("Ga naar", ["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export", "📈 Scenario's"])
+tab_selection = st.sidebar.radio("Ga naar", ["📖 Uitleg", "📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export", "📈 Scenario's"])
 
-# Dummy data voor validatie
-def generate_dummy_data():
-    return {
-        "historische_brandlift": random.uniform(80, 120),  # Simulatie van historische Brand Lift
-        "gemiddelde_attention_score": random.uniform(0.3, 0.8),  # Simulatie attentiescore per kanaal
-        "benchmark_brandlift": 100  # Industrie benchmark
-    }
-
-st.session_state["dummy_data"] = generate_dummy_data()
-
-# Berekening Brand Lift
-if st.session_state["media_alloc"]:
-    industry_norm = st.session_state["dummy_data"]["benchmark_brandlift"]  # Gebruik benchmark
-    st.session_state["brand_lift_per_channel"] = {
-        channel: round((st.session_state["media_alloc"][channel] / 1000) *
-                       (st.session_state["frequency_cap"] / 10) *
-                       st.session_state["creative_effectiveness"] *
-                       st.session_state["context_fit"] *
-                       (st.session_state["budget"] / 10000), 2)
-        for channel in st.session_state["media_alloc"]
-    }
-    st.session_state["total_brand_lift"] = sum(st.session_state["brand_lift_per_channel"].values())
-    st.session_state["brand_lift_index"] = round((st.session_state["total_brand_lift"] / industry_norm) * 100, 2)
-
-# AI-gestuurde optimalisatie
-if st.session_state["media_alloc"]:
-    st.session_state["ai_recommendations"] = {
-        channel: round(value * random.uniform(1.05, 1.2), 2) for channel, value in st.session_state["media_alloc"].items()
-    }
-
-# Weergeven van de juiste tab
-if tab_selection == "📊 Invoer":
-    st.header("📊 Campagne-instellingen")
-    st.markdown("Gebruik deze sectie om je campagne-instellingen te configureren. Selecteer de mediakanalen, stel budgetten in en optimaliseer je strategie.")
-    st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
-    st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
-    st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
+# Uitleg tab
+if tab_selection == "📖 Uitleg":
+    st.header("📖 Uitleg van het Model")
+    st.markdown("""
+    Dit dashboard helpt bij het optimaliseren van Brand Lift door media-allocatie en budgetstrategieën te simuleren.
     
-    st.header("📡 Kies Media Kanalen")
-    st.session_state["selected_channels"] = st.multiselect("Selecteer kanalen", ["Display", "Video", "DOOH", "Social", "CTV"], default=st.session_state["selected_channels"])
+    **Hoe werkt dit model?**
+    - Het voorspelt de **Brand Lift** op basis van:
+      - **Reach**: Het aantal mensen dat bereikt wordt.
+      - **Frequency**: Hoe vaak een advertentie wordt gezien.
+      - **Attention**: De mate van aandacht voor een advertentie.
+      - **Creative Effectiveness**: Hoe sterk de advertentie visueel en inhoudelijk is.
+      - **Context Fit**: Hoe goed de advertentie past binnen de omgeving.
     
-    st.header("📡 Media Allocatie")
-    media_alloc = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in st.session_state["selected_channels"]}
-    st.session_state["media_alloc"] = media_alloc
+    **Wat wordt berekend?**
+    - De totale **Brand Lift** (op basis van media-allocatie en instellingen).
+    - Een **Brand Lift Index** (100 = industrienorm).
+    - AI-gestuurde aanbevelingen voor optimalisatie.
+    
+    **Wat ontbreekt nog?**
+    - Realtime integratie met DSP's.
+    - Geavanceerde AI-modellen voor automatische optimalisatie.
+    - Betere koppeling met historische merkmetingen.
+    
+    **Volgende stappen:**
+    - Model valideren met echte data.
+    - Meer granulariteit toevoegen per mediumtype.
+    - Integratie met externe partners voor nauwkeurigere voorspellingen.
+    """)
 
-elif tab_selection == "🚀 Resultaten":
-    st.header("🚀 Resultaten en Analyse")
-    st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
-    st.metric(label="📊 Brand Lift Index", value=f"{st.session_state["brand_lift_index"]} (100 = industrienorm)")
-    
-    # Analyse en aanbevelingen
-    if st.session_state["brand_lift_index"] < 90:
-        st.warning("⚠️ De Brand Lift is lager dan de industrienorm. Overweeg de volgende verbeteringen:")
-        st.markdown("- **Verhoog de budgetallocatie** naar kanalen met een hogere effectiviteit.")
-        st.markdown("- **Optimaliseer de frequency cap** om herhaalde blootstelling te maximaliseren.")
-        st.markdown("- **Verbeter de creatieve effectiviteit** voor meer impact op merkherinnering.")
-    elif st.session_state["brand_lift_index"] > 110:
-        st.success("✅ De Brand Lift presteert boven de industrienorm! Overweeg de volgende stappen:")
-        st.markdown("- **Analyseer welke kanalen het beste presteren** en schaal deze verder op.")
-        st.markdown("- **Experimenteer met nieuwe allocaties** om de prestaties nog verder te verhogen.")
-    else:
-        st.info("ℹ️ De Brand Lift is in lijn met de industrienorm. Monitor de prestaties en test verdere optimalisaties.")
-    
-    # Grafiek toevoegen
-    fig, ax = plt.subplots()
-    ax.bar(st.session_state["brand_lift_per_channel"].keys(), st.session_state["brand_lift_per_channel"].values())
-    ax.set_title("Brand Lift per Kanaal")
-    st.pyplot(fig)
 
-elif tab_selection == "🔍 Optimalisatie":
-    st.header("🔍 AI-gestuurde Optimalisatie Advies")
-    if st.session_state["ai_recommendations"]:
-        st.json(st.session_state["ai_recommendations"])
 
