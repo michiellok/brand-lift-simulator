@@ -1,7 +1,6 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-import random
 import matplotlib.pyplot as plt
 
 # Titel van de app
@@ -41,13 +40,20 @@ tabs = st.tabs(["📖 Uitleg", "📊 Invoer", "🚀 Resultaten", "🔍 Optimalis
 
 # Berekening van Brand Lift
 def bereken_brand_lift():
+    if not st.session_state["media_alloc"]:
+        st.session_state["total_brand_lift"] = 0
+        return
+    
     base_lift = (st.session_state["budget"] / 10000) * 5  # Basis impact per 10k budget
     attention_factor = st.session_state["creative_effectiveness"] * 2
     frequency_factor = st.session_state["frequency_cap"] * 0.1
     lift_per_channel = {}
     
     for channel, alloc in st.session_state["media_alloc"].items():
-        channel_lift = base_lift * (alloc / 100) * attention_factor * frequency_factor
+        if alloc > 0:
+            channel_lift = base_lift * (alloc / 100) * attention_factor * frequency_factor
+        else:
+            channel_lift = 0
         lift_per_channel[channel] = channel_lift
     
     st.session_state["brand_lift_per_channel"] = lift_per_channel
@@ -64,8 +70,7 @@ with tabs[1]:
     st.session_state["selected_channels"] = st.multiselect("Selecteer kanalen", ["Display", "Video", "DOOH", "Social", "CTV"], default=st.session_state["selected_channels"])
     
     st.header("📡 Media Allocatie")
-    media_alloc = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in st.session_state["selected_channels"]}
-    st.session_state["media_alloc"] = media_alloc
+    st.session_state["media_alloc"] = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in st.session_state["selected_channels"]}
     
     if st.button("Bereken Brand Lift"):
         bereken_brand_lift()
@@ -90,11 +95,19 @@ with tabs[2]:
 # Optimalisatie Tab
 with tabs[3]:
     st.header("🔍 AI-gestuurde Optimalisatie Advies")
-    st.write("Op basis van de ingevoerde waarden wordt hier een aanbeveling weergegeven.")
-    st.json(st.session_state["ai_recommendations"])
-    
+    if st.session_state["total_brand_lift"] > 0:
+        st.write("Op basis van de ingevoerde waarden wordt hier een aanbeveling weergegeven.")
+        st.json(st.session_state["ai_recommendations"])
+    else:
+        st.write("Geen data beschikbaar voor optimalisatie. Bereken eerst de Brand Lift.")
+
 # Scenario Tab
 with tabs[5]:
     st.header("📈 Scenario Analyse")
-    st.write("Experimenteer met verschillende budgetten en frequenties om de optimale strategie te vinden.")
+    if st.session_state["total_brand_lift"] > 0:
+        st.write("Experimenteer met verschillende budgetten en frequenties om de optimale strategie te vinden.")
+    else:
+        st.write("Geen gegevens beschikbaar voor scenario-analyse. Bereken eerst de Brand Lift.")
+
+
 
