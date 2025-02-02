@@ -73,6 +73,7 @@ if st.session_state["media_alloc"]:
 # Weergeven van de juiste tab
 if tab_selection == "📊 Invoer":
     st.header("📊 Campagne-instellingen")
+    st.markdown("Gebruik deze sectie om je campagne-instellingen te configureren. Selecteer de mediakanalen, stel budgetten in en optimaliseer je strategie.")
     st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
     st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
     st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
@@ -112,12 +113,4 @@ elif tab_selection == "🔍 Optimalisatie":
     st.header("🔍 AI-gestuurde Optimalisatie Advies")
     if st.session_state["ai_recommendations"]:
         st.json(st.session_state["ai_recommendations"])
-
-
-
-
-
-
-
-
 
