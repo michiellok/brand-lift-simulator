@@ -54,6 +54,15 @@ with tab1:
         st.session_state["active_tab"] = "🚀 Resultaten"
         st.rerun()
 
+# 2️⃣ Resultaten tab
+with tab2:
+    st.header("🚀 Resultaten en Analyse")
+    if st.session_state["media_alloc"]:
+        total_brand_lift = sum(st.session_state["brand_lift_per_channel"].values()) if st.session_state["brand_lift_per_channel"] else 0
+        st.metric(label="Totale Brand Lift", value=round(total_brand_lift, 2))
+    else:
+        st.warning("⚠️ Geen data beschikbaar. Vul eerst de invoervelden in.")
+
 # 3️⃣ Optimalisatie tab
 with tab3:
     st.header("🔍 Optimalisatie Advies")
@@ -98,4 +107,5 @@ with tab5:
         st.bar_chart(df_scenario.set_index("Kanaal"))
     else:
         st.warning("⚠️ Geen media-allocatie beschikbaar. Ga naar 'Invoer' en stel een budget in.")
+
 
