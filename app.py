@@ -36,6 +36,10 @@ if "ai_recommendations" not in st.session_state:
 if "total_brand_lift" not in st.session_state:
     st.session_state["total_brand_lift"] = 0
 
+# Tabs maken, altijd zichtbaar
+st.sidebar.title("Navigatie")
+tab_selection = st.sidebar.radio("Ga naar", ["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export", "📈 Scenario's"])
+
 # Dummy data voor validatie
 def generate_dummy_data():
     return {
@@ -66,11 +70,21 @@ if st.session_state["media_alloc"]:
         channel: round(value * random.uniform(1.05, 1.2), 2) for channel, value in st.session_state["media_alloc"].items()
     }
 
-# Tabs maken
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export", "📈 Scenario's"])
+# Weergeven van de juiste tab
+if tab_selection == "📊 Invoer":
+    st.header("📊 Campagne-instellingen")
+    st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
+    st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
+    st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
+    
+    st.header("📡 Kies Media Kanalen")
+    st.session_state["selected_channels"] = st.multiselect("Selecteer kanalen", ["Display", "Video", "DOOH", "Social", "CTV"], default=st.session_state["selected_channels"])
+    
+    st.header("📡 Media Allocatie")
+    media_alloc = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in st.session_state["selected_channels"]}
+    st.session_state["media_alloc"] = media_alloc
 
-# 2️⃣ Resultaten tab
-with tab2:
+elif tab_selection == "🚀 Resultaten":
     st.header("🚀 Resultaten en Analyse")
     st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
     st.metric(label="📊 Brand Lift Index", value=f"{st.session_state["brand_lift_index"]} (100 = industrienorm)")
@@ -94,11 +108,12 @@ with tab2:
     ax.set_title("Brand Lift per Kanaal")
     st.pyplot(fig)
 
-# 3️⃣ Optimalisatie tab
-with tab3:
+elif tab_selection == "🔍 Optimalisatie":
     st.header("🔍 AI-gestuurde Optimalisatie Advies")
     if st.session_state["ai_recommendations"]:
         st.json(st.session_state["ai_recommendations"])
+
+
 
 
 
