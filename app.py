@@ -39,14 +39,19 @@ if "total_brand_lift" not in st.session_state:
 # Tabs maken met Streamlit tabs
 tabs = st.tabs(["📖 Uitleg", "📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export", "📈 Scenario's"])
 
-# Uitleg Tab
-with tabs[0]:
-    st.header("📖 Uitleg van het Model")
-    st.write("Dit model voorspelt de Brand Lift op basis van verschillende factoren zoals budget, kanaalallocatie, aandacht en creatieve effectiviteit. Het doel is om mediabureaus en adverteerders te helpen bij het optimaliseren van hun media-inzet.")
-    st.write("\n\n**Wat houdt het model in?**\n\nHet model berekent de impact van verschillende mediakanalen en hoe ze bijdragen aan de Brand Lift. Hierbij wordt rekening gehouden met factoren zoals frequentie, creatieve effectiviteit, budget, looptijd en contextuele geschiktheid.")
-    st.write("\n\n**Welke variabelen beïnvloeden de Brand Lift?**\n- **Reach:** Hoeveel mensen worden bereikt?\n- **Frequency:** Hoe vaak wordt de advertentie gezien?\n- **Attention:** Hoeveel aandacht krijgt de advertentie?\n- **Creative Quality:** Hoe goed is de advertentie?\n- **Context Fit:** Hoe goed past de advertentie bij de omgeving?\n- **Budget:** De totale mediainvestering beïnvloedt de impact direct.\n- **Looptijd:** Een langere campagne kan effectiever zijn, afhankelijk van de frequentie en impact per kanaal.")
-    st.write("\n\n**Waarom deze variabelen?**\n- **Reach & Frequency:** Essentieel voor awareness, maar met afnemende meerwaarde na een bepaald punt.\n- **Attention:** Kritisch voor engagement en wordt vaak onderschat in traditionele modellen.\n- **Creative Quality & Context Fit:** Hebben een langdurige invloed op merkherinnering en merkvoorkeur.\n- **Budget & Looptijd:** Essentieel voor schaal en herhalingseffecten, beïnvloeden ROI en impact over tijd.")
-    st.write("\n\n**Wat ontbreekt nog?**\n\nHet model bevat nog geen real-time feedback loops en externe datakoppelingen zoals live marktdata en concurrentie-analyse. In de volgende fasen worden deze toegevoegd om de nauwkeurigheid en betrouwbaarheid te vergroten.")
+# Berekening van Brand Lift
+def bereken_brand_lift():
+    base_lift = (st.session_state["budget"] / 10000) * 5  # Basis impact per 10k budget
+    attention_factor = st.session_state["creative_effectiveness"] * 2
+    frequency_factor = st.session_state["frequency_cap"] * 0.1
+    lift_per_channel = {}
+    
+    for channel, alloc in st.session_state["media_alloc"].items():
+        channel_lift = base_lift * (alloc / 100) * attention_factor * frequency_factor
+        lift_per_channel[channel] = channel_lift
+    
+    st.session_state["brand_lift_per_channel"] = lift_per_channel
+    st.session_state["total_brand_lift"] = sum(lift_per_channel.values())
 
 # Invoer Tab
 with tabs[1]:
@@ -61,6 +66,9 @@ with tabs[1]:
     st.header("📡 Media Allocatie")
     media_alloc = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in st.session_state["selected_channels"]}
     st.session_state["media_alloc"] = media_alloc
+    
+    if st.button("Bereken Brand Lift"):
+        bereken_brand_lift()
 
 # Resultaten Tab
 with tabs[2]:
@@ -70,10 +78,7 @@ with tabs[2]:
     else:
         st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
         st.write("De Brand Lift wordt berekend op basis van de gekozen instellingen. Gebruik de optimalisatie-tab om betere resultaten te krijgen.")
-        st.write("\n**Waarom is de Brand Lift zo hoog of laag?**\n\nDe berekening houdt rekening met: budget, aandacht, creatieve effectiviteit en de media-allocatie. Lage aandacht en ongeschikte allocatie kunnen de Brand Lift verlagen.")
-
-# Voeg grafiek toe
-    if st.session_state["total_brand_lift"] > 0:
+        
         fig, ax = plt.subplots()
         channels = list(st.session_state["brand_lift_per_channel"].keys())
         lifts = list(st.session_state["brand_lift_per_channel"].values())
@@ -81,4 +86,17 @@ with tabs[2]:
         ax.set_xlabel("Brand Lift Score")
         ax.set_title("Brand Lift per Kanaal")
         st.pyplot(fig)
+
+# Optimalisatie Tab
+with tabs[3]:
+    st.header("🔍 AI-gestuurde Optimalisatie Advies")
+    st.write("Op basis van de ingevoerde waarden wordt hier een aanbeveling weergegeven.")
+    st.json(st.session_state["ai_recommendations"])
+    
+# Scenario Tab
+with tabs[5]:
+    st.header("📈 Scenario Analyse")
+    st.write("Experimenteer met verschillende budgetten en frequenties om de optimale strategie te vinden.")
+
+
 
