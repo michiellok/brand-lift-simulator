@@ -39,7 +39,7 @@ def bereken_brand_lift():
     bereken_reach()
     base_lift = (st.session_state["reach"] / 1_000_000) * 0.4
     frequency_factor = st.session_state["frequency_cap"] * 0.3
-    attention_factor = st.session_state["attention"] * 0.6
+    attention_factor = st.session_state.get("attention", 0.6) * 0.6
     creative_factor = st.session_state["creative_effectiveness"] * 0.4
     context_factor = st.session_state["context_fit"] * 0.3
     
@@ -54,8 +54,10 @@ st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal verton
 st.session_state["cpm"] = st.number_input("CPM (Kosten per 1000 impressies in €)", min_value=1, max_value=1000, value=st.session_state["cpm"], step=1)
 
 st.header("📡 Media Kanalen")
-for channel in st.session_state["selected_channels"]:
-    st.session_state["selected_channels"][channel] = st.checkbox(f"{channel}", st.session_state["selected_channels"][channel])
+updated_channels = {}
+for channel, is_active in st.session_state["selected_channels"].items():
+    updated_channels[channel] = st.checkbox(f"{channel}", is_active)
+st.session_state["selected_channels"] = updated_channels
 
 if st.button("Bereken Brand Lift"):
     bereken_brand_lift()
@@ -72,3 +74,4 @@ ax.set_title("Brand Lift Overzicht")
 st.pyplot(fig)
 
 st.write("\n**Eerste versie van het model. Toekomstige iteraties zullen validatie en optimalisatie bevatten.**")
+
