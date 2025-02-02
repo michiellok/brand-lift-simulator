@@ -16,6 +16,7 @@ default_values = {
     "context_fit": 0.5,
     "cpm": 10,
     "selected_channels": {"CTV": True, "Social": True, "Video": True, "Display": True, "DOOH": True},
+    "media_alloc": {"CTV": 20, "Social": 20, "Video": 20, "Display": 20, "DOOH": 20},
     "brand_lift_per_channel": {},
     "total_brand_lift": 0
 }
@@ -28,9 +29,12 @@ for key, value in default_values.items():
 def bereken_reach():
     total_active_channels = sum(1 for active in st.session_state["selected_channels"].values() if active)
     if total_active_channels > 0:
-        budget_per_channel = st.session_state["budget"] / total_active_channels
-        reach_per_channel = (budget_per_channel / st.session_state["cpm"]) * 1000  # CPM is per 1000 impressies
-        st.session_state["reach"] = reach_per_channel * total_active_channels
+        reach_per_channel = {}
+        for channel, is_active in st.session_state["selected_channels"].items():
+            if is_active:
+                budget_for_channel = (st.session_state["media_alloc"].get(channel, 0) / 100) * st.session_state["budget"]
+                reach_per_channel[channel] = (budget_for_channel / st.session_state["cpm"]) * 1000  # CPM is per 1000 impressies
+        st.session_state["reach"] = sum(reach_per_channel.values())
     else:
         st.session_state["reach"] = 0
 
@@ -59,6 +63,11 @@ for channel, is_active in st.session_state["selected_channels"].items():
     updated_channels[channel] = st.checkbox(f"{channel}", is_active)
 st.session_state["selected_channels"] = updated_channels
 
+st.header("📊 Media Allocatie (%)")
+for channel in st.session_state["selected_channels"]:
+    if st.session_state["selected_channels"][channel]:
+        st.session_state["media_alloc"][channel] = st.slider(f"{channel} Allocatie", 0, 100, st.session_state["media_alloc"].get(channel, 20))
+
 if st.button("Bereken Brand Lift"):
     bereken_brand_lift()
 
@@ -74,4 +83,3 @@ ax.set_title("Brand Lift Overzicht")
 st.pyplot(fig)
 
 st.write("\n**Eerste versie van het model. Toekomstige iteraties zullen validatie en optimalisatie bevatten.**")
-
