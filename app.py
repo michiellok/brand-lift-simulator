@@ -33,7 +33,7 @@ with tab1:
     
     st.header("🔧 Extra variabelen")
     st.session_state["cpm"] = st.slider("Cost per Mille (CPM in €) 🛈", 1, 50, st.session_state["cpm"], help="De geschatte kosten per 1000 vertoningen (CPM) van je campagne.")
-    st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. frequentie per gebruiker) 🛈", 1, 20, st.session_state["frequency_cap"], help="Maximaal aantal keer dat een gebruiker de advertentie te zien krijgt binnen de campagneperiode."), 1, 20, st.session_state["frequency_cap"])
+    st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. frequentie per gebruiker) 🛈", 1, 20, st.session_state["frequency_cap"], help="Maximaal aantal keer dat een gebruiker de advertentie te zien krijgt binnen de campagneperiode.")
     st.session_state["creative_effectiveness"] = st.slider("Creative Effectiveness Score (0-1) 🛈", help="De verwachte effectiviteit van de creatieve boodschap. Dit beïnvloedt de uiteindelijke brand lift.", 0.1, 1.0, st.session_state["creative_effectiveness"])
     
     st.header("📡 Media Allocatie")
@@ -92,6 +92,7 @@ with tab4:
     df_export = pd.DataFrame({"Kanaal": list(st.session_state["media_alloc"].keys()), "Huidige Allocatie": list(st.session_state["media_alloc"].values()), "Brand Lift": list(brand_lift_per_channel.values())})
     csv = df_export.to_csv(index=False).encode('utf-8')
     st.download_button("📥 Download als CSV 🛈", data=csv, file_name="brand_lift_results.csv", mime='text/csv', help="Download de resultaten van de analyse als een CSV-bestand voor verdere verwerking.")
+
 
 
 
