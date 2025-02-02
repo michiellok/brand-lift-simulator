@@ -7,6 +7,10 @@ import matplotlib.pyplot as plt
 st.title("Brand Lift & Cross-Channel Optimization - Fase 1")
 st.subheader("Simuleer en analyseer je media-allocatie voor maximale impact")
 
+# Tabs maken met een extra uitleg-tab
+st.sidebar.title("📂 Navigatie")
+tabs = st.sidebar.radio("Selecteer een tab:", ["📊 Campagne-instellingen", "🚀 Resultaten en Analyse", "📖 Hoe werkt dit model?"])
+
 # Initialiseer session state met standaardwaarden indien niet aanwezig
 default_values = {
     "budget": 10000,
@@ -53,51 +57,53 @@ def bereken_brand_lift():
     total_lift = base_lift + frequency_factor + attention_factor + creative_factor + context_factor
     st.session_state["total_brand_lift"] = total_lift
 
-# Campagne-instellingen
-st.header("📊 Campagne-instellingen")
-st.write("Hier stel je de kernparameters van je campagne in, zoals budget, duur, CPM en frequency cap.")
-st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100, help="Bepaal het totale beschikbare budget voor deze campagne.")
-st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"], help="Selecteer hoe lang de campagne loopt.")
-st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"], help="Beperk het aantal keren dat een gebruiker de advertentie kan zien.")
-st.session_state["cpm"] = st.number_input("CPM (Kosten per 1000 impressies in €)", min_value=1, max_value=1000, value=st.session_state["cpm"], step=1, help="Bepaal de geschatte kosten per 1000 impressies.")
-st.session_state["attention"] = st.slider("Attention Score (0 - 1)", 0.0, 1.0, st.session_state["attention"], step=0.01, help="Hoeveel aandacht krijgt de advertentie gemiddeld?")
+# 📖 Uitleg Tab
+if tabs == "📖 Hoe werkt dit model?":
+    st.header("📖 Hoe werkt dit model?")
+    st.write("Dit model voorspelt de Brand Lift van een campagne door middel van een aantal kernfactoren, waaronder:")
+    st.markdown("""
+    - **Budget**: Het totale bedrag dat aan de campagne wordt besteed.
+    - **Campagne Duur**: Hoe lang de campagne loopt.
+    - **CPM (Cost per Mille)**: Kosten per 1000 impressies.
+    - **Frequency Cap**: Het maximum aantal keer dat een gebruiker een advertentie kan zien.
+    - **Attention Score**: Hoeveel aandacht een advertentie gemiddeld krijgt.
+    - **Creative Effectiveness & Context Fit**: De kwaliteit en relevantie van de advertentie in de context waarin deze wordt weergegeven.
+    
+    De Brand Lift wordt berekend met de volgende formule:
+    ```
+    Brand Lift = (0.4 × Reach / 1.000.000) + (0.3 × Frequency) + (0.6 × Attention) + (0.4 × Creative Quality) + (0.3 × Context Fit)
+    ```
+    """)
+    st.subheader("🔍 Voorbeeldcampagne")
+    st.write("Bij een budget van €50.000, een CPM van €10 en een frequentiecap van 5 zou de berekening als volgt gaan:")
+    st.markdown("""
+    - Geschatte reach: (50.000 / 10) * 1000 = 5.000.000 impressies
+    - Brand Lift = (0.4 × 5) + (0.3 × 5) + (0.6 × 0.8) + (0.4 × 0.7) + (0.3 × 0.6) = 3.55
+    
+    Dit betekent dat de campagne naar verwachting een gemiddelde Brand Lift van 3.55 zal genereren.
+    """)
+    st.write("Gebruik de andere tabs om je eigen campagne te simuleren!")
 
-# Media kanalen selectie
-st.header("📡 Media Kanalen")
-st.write("Vink de kanalen aan die je wilt gebruiken in deze campagne.")
-updated_channels = {}
-for channel, is_active in st.session_state["selected_channels"].items():
-    updated_channels[channel] = st.checkbox(f"{channel}", is_active, help=f"Schakel {channel} in of uit.")
-st.session_state["selected_channels"] = updated_channels
+# 📊 Campagne-instellingen Tab
+elif tabs == "📊 Campagne-instellingen":
+    st.header("📊 Campagne-instellingen")
+    st.write("Hier stel je de kernparameters van je campagne in.")
+    st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
+    st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
+    st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
+    st.session_state["cpm"] = st.number_input("CPM (Kosten per 1000 impressies in €)", min_value=1, max_value=1000, value=st.session_state["cpm"], step=1)
+    if st.button("Bereken Brand Lift"):
+        bereken_brand_lift()
 
-# Budget allocatie per kanaal
-st.header("📊 Media Allocatie (%)")
-st.write("Verdeel het budget over de geselecteerde kanalen.")
-for channel in st.session_state["selected_channels"]:
-    if st.session_state["selected_channels"][channel]:
-        st.session_state["media_alloc"][channel] = st.slider(f"{channel} Allocatie", 0, 100, st.session_state["media_alloc"].get(channel, 20), help=f"Bepaal welk percentage van het budget naar {channel} gaat.")
-
-# Bereken en toon resultaten
-if st.button("Bereken Brand Lift"):
-    bereken_brand_lift()
-
-# Resultaten tonen
-st.header("🚀 Resultaten en Analyse")
-st.write("Hier zie je de impact van je campagne-instellingen.")
-st.metric(label="Geschatte Reach", value=int(st.session_state["reach"]), help="Het geschatte aantal unieke gebruikers dat je campagne bereikt.")
-st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2), help="De voorspelde toename in merkimpact als gevolg van deze campagne.")
-
-fig, ax = plt.subplots()
-ax.barh(["Brand Lift"], [st.session_state["total_brand_lift"]], color='skyblue')
-ax.set_xlabel("Brand Lift Score")
-ax.set_title("Brand Lift Overzicht")
-st.pyplot(fig)
-
-# Exporteerbare CSV output
-st.header("📂 Download Resultaten")
-st.write("Download de campagne-instellingen voor verdere analyse.")
-df = pd.DataFrame({"Kanaal": list(st.session_state["selected_channels"].keys()), "Allocatie (%)": list(st.session_state["media_alloc"].values())})
-csv = df.to_csv(index=False).encode('utf-8')
-st.download_button(label="Download CSV", data=csv, file_name="brand_lift_resultaten.csv", mime="text/csv")
+# 🚀 Resultaten en Analyse Tab
+elif tabs == "🚀 Resultaten en Analyse":
+    st.header("🚀 Resultaten en Analyse")
+    st.metric(label="Geschatte Reach", value=int(st.session_state["reach"]))
+    st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
+    fig, ax = plt.subplots()
+    ax.barh(["Brand Lift"], [st.session_state["total_brand_lift"]], color='skyblue')
+    ax.set_xlabel("Brand Lift Score")
+    ax.set_title("Brand Lift Overzicht")
+    st.pyplot(fig)
 
 st.write("\n**Eerste versie van het model. Toekomstige iteraties zullen validatie en optimalisatie bevatten.**")
