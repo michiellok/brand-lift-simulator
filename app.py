@@ -1,7 +1,6 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 # Titel van de app
 st.title("Brand Lift & Cross-Channel Optimization Dashboard")
@@ -93,4 +92,5 @@ with tab4:
     df_export = pd.DataFrame({"Kanaal": list(st.session_state["media_alloc"].keys()), "Huidige Allocatie": list(st.session_state["media_alloc"].values()), "Brand Lift": list(brand_lift_per_channel.values())})
     csv = df_export.to_csv(index=False).encode('utf-8')
     st.download_button("📥 Download als CSV 🛈", data=csv, file_name="brand_lift_results.csv", mime='text/csv', help="Download de resultaten van de analyse als een CSV-bestand voor verdere verwerking.")
+
 
