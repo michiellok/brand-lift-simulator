@@ -27,16 +27,22 @@ if "selected_channels" not in st.session_state:
     st.session_state["selected_channels"] = ["Display", "Video", "DOOH", "Social", "CTV"]
 if "brand_lift_per_channel" not in st.session_state:
     st.session_state["brand_lift_per_channel"] = {}
+if "brand_lift_index" not in st.session_state:
+    st.session_state["brand_lift_index"] = 100
 
 # Berekening Brand Lift
 if st.session_state["media_alloc"]:
+    industry_norm = 100  # De gemiddelde industrienorm voor Brand Lift
     st.session_state["brand_lift_per_channel"] = {
         channel: round((st.session_state["media_alloc"][channel] / 1000) *
                        (st.session_state["frequency_cap"] / 10) *
                        st.session_state["creative_effectiveness"] *
-                       st.session_state["context_fit"], 2)
+                       st.session_state["context_fit"] *
+                       (st.session_state["budget"] / 10000), 2)
         for channel in st.session_state["media_alloc"]
     }
+    total_brand_lift = sum(st.session_state["brand_lift_per_channel"].values())
+    st.session_state["brand_lift_index"] = round((total_brand_lift / industry_norm) * 100, 2)
 
 # Tabs maken
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export", "📈 Scenario's"])
@@ -70,6 +76,7 @@ with tab2:
     if st.session_state["media_alloc"]:
         total_brand_lift = sum(st.session_state["brand_lift_per_channel"].values())
         st.metric(label="Totale Brand Lift", value=round(total_brand_lift, 2))
+        st.metric(label="📊 Brand Lift Index", value=f"{st.session_state["brand_lift_index"]} (100 = industrienorm)")
     else:
         st.warning("⚠️ Geen data beschikbaar. Vul eerst de invoervelden in.")
 
@@ -87,5 +94,3 @@ with tab3:
         st.bar_chart(df_comparison.set_index("Kanaal"))
     else:
         st.warning("⚠️ Geen media-allocatie beschikbaar. Ga naar 'Invoer' en stel een budget in.")
-
-
