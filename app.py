@@ -43,6 +43,8 @@ tabs = st.tabs(["📖 Uitleg", "📊 Invoer", "🚀 Resultaten", "🔍 Optimalis
 with tabs[0]:
     st.header("📖 Uitleg van het Model")
     st.write("Dit model voorspelt de Brand Lift op basis van verschillende factoren zoals budget, kanaalallocatie, aandacht en creatieve effectiviteit. Het doel is om mediabureaus en adverteerders te helpen bij het optimaliseren van hun media-inzet.")
+    st.write("\n\n**Wat houdt het model in?**\n\nHet model berekent de impact van verschillende mediakanalen en hoe ze bijdragen aan de Brand Lift. Hierbij wordt rekening gehouden met factoren zoals frequentie, creatieve effectiviteit en contextuele geschiktheid.")
+    st.write("\n\n**Wat ontbreekt nog?**\n\nHet model bevat nog geen real-time feedback loops en externe datakoppelingen zoals live marktdata en concurrentie-analyse. In de volgende fasen worden deze toegevoegd om de nauwkeurigheid en betrouwbaarheid te vergroten.")
 
 # Invoer Tab
 with tabs[1]:
@@ -63,12 +65,15 @@ with tabs[2]:
     st.header("🚀 Resultaten en Analyse")
     st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
     st.write("De Brand Lift wordt berekend op basis van de gekozen instellingen. Gebruik de optimalisatie-tab om betere resultaten te krijgen.")
+    st.write("\n**Waarom is de Brand Lift zo hoog of laag?**\n\nDe berekening houdt rekening met: budget, aandacht, creatieve effectiviteit en de media-allocatie. Lage aandacht en ongeschikte allocatie kunnen de Brand Lift verlagen.")
 
 # Optimalisatie Tab
 with tabs[3]:
     st.header("🔍 AI-gestuurde Optimalisatie Advies")
     if st.session_state["ai_recommendations"]:
         st.json(st.session_state["ai_recommendations"])
+    else:
+        st.write("Nog geen AI-aanbevelingen beschikbaar. Voer gegevens in om een advies te ontvangen.")
     
     st.header("🔧 Handmatige Aanpassing")
     st.markdown("Pas de media-allocatie handmatig aan op basis van AI-aanbevelingen.")
@@ -87,6 +92,8 @@ with tabs[4]:
 with tabs[5]:
     st.header("📈 Scenario Analyse")
     st.write("Werkende scenario's worden hier weergegeven.")
+
+
 
 
 
