@@ -46,8 +46,7 @@ with tab1:
         st.rerun()
 
 # 2️⃣ Resultaten tab
-    
-    with tab2:
+with tab2:
     st.header("🚀 Berekening van Brand Lift per Kanaal")
     media_characteristics = {
         "Display": {"attention": 0.6, "frequency": 3},
@@ -61,7 +60,6 @@ with tab1:
     for channel, alloc in st.session_state["media_alloc"].items():
         reach = (alloc / 100) * (st.session_state["budget"] / st.session_state["cpm"]) * min(st.session_state["campaign_duration"] / 30, 1)
         brand_lift = reach * media_characteristics[channel]["attention"] * st.session_state["creative_effectiveness"]
-        # Simuleer verzadiging: effectiviteit neemt af bij hogere frequenties
         brand_lift *= (1 - np.exp(-media_characteristics[channel]["frequency"] / st.session_state["frequency_cap"]))
         brand_lift_per_channel[channel] = round(brand_lift, 2)
     
@@ -82,6 +80,17 @@ with tab4:
     df_export = pd.DataFrame({"Kanaal": list(st.session_state["media_alloc"].keys()), "Huidige Allocatie": list(st.session_state["media_alloc"].values()), "Brand Lift": list(brand_lift_per_channel.values())})
     csv = df_export.to_csv(index=False).encode('utf-8')
     st.download_button("📥 Download als CSV", data=csv, file_name="brand_lift_results.csv", mime='text/csv')
+
+# Onderste sectie: Uitleg over variabelen
+st.header("📖 Uitleg over variabelen")
+st.write("- **Totaal Budget (€)**: Het totale budget voor de campagne.")
+st.write("- **Campagne Duur (dagen)**: De lengte van de campagne.")
+st.write("- **CPM (€)**: Kosten per duizend vertoningen.")
+st.write("- **Frequency Cap**: Maximaal aantal keer dat een gebruiker de advertentie ziet.")
+st.write("- **Creative Effectiveness**: Hoe goed de advertentie creatief presteert.")
+st.write("- **Media Allocatie (%)**: Hoe het budget wordt verdeeld over de kanalen.")
+st.write("- **Brand Lift**: De verwachte impact van de campagne op merkherkenning en engagement.")
+
 
 
 
