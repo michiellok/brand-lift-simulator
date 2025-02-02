@@ -30,7 +30,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optima
 with tab1:
     st.header("📊 Campagne-instellingen")
     st.session_state["budget"] = st.number_input("Totaal Budget (in €) 🛈", help="Geef hier het totale budget in euro's op dat je voor deze campagne beschikbaar hebt.", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
-    st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen) 🛈", help="Selecteer de duur van de campagne in dagen. Dit beïnvloedt de impact en verdeling van het budget.", 1, 90, st.session_state["campaign_duration"])
+    st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen) 🛈", 1, 90, st.session_state["campaign_duration"], help="Selecteer de duur van de campagne in dagen. Dit beïnvloedt de impact en verdeling van het budget."), 1, 90, st.session_state["campaign_duration"])
     
     st.header("🔧 Extra variabelen")
     st.session_state["cpm"] = st.slider("Cost per Mille (CPM in €) 🛈", help="De geschatte kosten per 1000 vertoningen (CPM) van je campagne.", 1, 50, st.session_state["cpm"])
@@ -92,7 +92,8 @@ with tab4:
     st.header("📂 Download Resultaten")
     df_export = pd.DataFrame({"Kanaal": list(st.session_state["media_alloc"].keys()), "Huidige Allocatie": list(st.session_state["media_alloc"].values()), "Brand Lift": list(brand_lift_per_channel.values())})
     csv = df_export.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Download als CSV 🛈", help="Download de resultaten van de analyse als een CSV-bestand voor verdere verwerking.", data=csv, file_name="brand_lift_results.csv", mime='text/csv')
+    st.download_button("📥 Download als CSV 🛈", data=csv, file_name="brand_lift_results.csv", mime='text/csv', help="Download de resultaten van de analyse als een CSV-bestand voor verdere verwerking.")
+
 
 
 
