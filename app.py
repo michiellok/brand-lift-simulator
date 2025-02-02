@@ -29,33 +29,6 @@ for key, value in default_values.items():
     if key not in st.session_state:
         st.session_state[key] = value
 
-# Berekening van Reach op basis van budget en CPM met decay factor
-def bereken_reach():
-    total_active_channels = sum(1 for active in st.session_state["selected_channels"].values() if active)
-    if total_active_channels > 0:
-        reach_per_channel = {}
-        for channel, is_active in st.session_state["selected_channels"].items():
-            if is_active:
-                budget_for_channel = (st.session_state["media_alloc"].get(channel, 0) / 100) * st.session_state["budget"]
-                reach_per_channel[channel] = (budget_for_channel / st.session_state["cpm"]) * 1000  # CPM is per 1000 impressies
-        total_reach = sum(reach_per_channel.values())
-        decay_factor = 1 - (st.session_state["campaign_duration"] / 100)  # Simpele decay factor
-        st.session_state["reach"] = total_reach * max(decay_factor, 0.5)  # Zorg dat decay niet negatief wordt
-    else:
-        st.session_state["reach"] = 0
-
-# Berekening van Brand Lift
-def bereken_brand_lift():
-    bereken_reach()
-    base_lift = (st.session_state["reach"] / 1_000_000) * 0.4
-    frequency_factor = st.session_state["frequency_cap"] * 0.3
-    attention_factor = st.session_state["attention"] * 0.6
-    creative_factor = st.session_state["creative_effectiveness"] * 0.4
-    context_factor = st.session_state["context_fit"] * 0.3
-    
-    total_lift = base_lift + frequency_factor + attention_factor + creative_factor + context_factor
-    st.session_state["total_brand_lift"] = total_lift
-
 # 📊 Campagne-instellingen Tab
 with tab1:
     st.header("📊 Campagne-instellingen")
@@ -64,6 +37,12 @@ with tab1:
     st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
     st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
     st.session_state["cpm"] = st.number_input("CPM (Kosten per 1000 impressies in €)", min_value=1, max_value=1000, value=st.session_state["cpm"], step=1)
+    
+    st.header("📡 Media Allocatie")
+    for channel in st.session_state["selected_channels"]:
+        if st.session_state["selected_channels"][channel]:
+            st.session_state["media_alloc"][channel] = st.slider(f"{channel} Allocatie (%)", 0, 100, st.session_state["media_alloc"].get(channel, 20))
+    
     if st.button("Bereken Brand Lift"):
         bereken_brand_lift()
 
@@ -98,12 +77,17 @@ with tab3:
     st.subheader("🔍 Voorbeeldcampagne")
     st.write("Bij een budget van €50.000, een CPM van €10 en een frequentiecap van 5 zou de berekening als volgt gaan:")
     st.markdown("""
-    - Geschatte reach: (50.000 / 10) * 1000 = 5.000.000 impressies
-    - Brand Lift = (0.4 × 5) + (0.3 × 5) + (0.6 × 0.8) + (0.4 × 0.7) + (0.3 × 0.6) = 3.55
+    - **Geschatte reach**: (50.000 / 10) * 1000 = **5.000.000 impressies**  
+    - **Brand Lift-berekening**:
+        - (0.4 × 5) → Bereikfactor (0.4 weegt Reach, 5M impressies omgerekend naar schaal)
+        - (0.3 × 5) → Frequentiefactor (0.3 weegt Frequency Cap van 5 vertoningen per gebruiker)
+        - (0.6 × 0.8) → Attention Score-factor (0.6 weegt hoe goed de advertentie wordt bekeken, 0.8 is de attention score)
+        - (0.4 × 0.7) → Creatieve kwaliteit (0.4 weegt de effectiviteit van de advertentie zelf, 0.7 is de kwaliteitsscore)
+        - (0.3 × 0.6) → Contextuele fit (0.3 weegt hoe goed de advertentie bij de omgeving past, 0.6 is de context fit score)
+    - **Totaal**: 2.0 + 1.5 + 0.48 + 0.28 + 0.18 = **3.55**
     
-    Dit betekent dat de campagne naar verwachting een gemiddelde Brand Lift van 3.55 zal genereren.
+    Dit betekent dat de campagne naar verwachting een gemiddelde Brand Lift van **3.55** zal genereren.
     """)
     st.write("Gebruik de andere tabs om je eigen campagne te simuleren!")
 
 st.write("\n**Eerste versie van het model. Toekomstige iteraties zullen validatie en optimalisatie bevatten.**")
-
