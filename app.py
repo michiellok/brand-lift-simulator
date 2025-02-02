@@ -27,9 +27,6 @@ for key, value in default_values.items():
         st.session_state[key] = value
 
 # Berekening van Reach op basis van budget en CPM met decay factor
-# Dit bepaalt hoeveel mensen je campagne zal bereiken
-# Budget wordt verdeeld over actieve kanalen en afhankelijk van de CPM wordt reach berekend
-# Een decay factor simuleert hoe impact afneemt bij langere campagnes
 def bereken_reach():
     total_active_channels = sum(1 for active in st.session_state["selected_channels"].values() if active)
     if total_active_channels > 0:
@@ -45,8 +42,6 @@ def bereken_reach():
         st.session_state["reach"] = 0
 
 # Berekening van Brand Lift
-# Dit model combineert verschillende factoren om de totale Brand Lift te voorspellen
-# Higher reach, frequency, attention, creative effectiveness en context fit verbeteren Brand Lift
 def bereken_brand_lift():
     bereken_reach()
     base_lift = (st.session_state["reach"] / 1_000_000) * 0.4
@@ -59,28 +54,28 @@ def bereken_brand_lift():
     st.session_state["total_brand_lift"] = total_lift
 
 # Campagne-instellingen
-# Hier bepaal je de kernparameters van de campagne, zoals budget en CPM
 st.header("📊 Campagne-instellingen")
-st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
-st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
-st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"])
-st.session_state["cpm"] = st.number_input("CPM (Kosten per 1000 impressies in €)", min_value=1, max_value=1000, value=st.session_state["cpm"], step=1)
-st.session_state["attention"] = st.slider("Attention Score (0 - 1)", 0.0, 1.0, st.session_state["attention"], step=0.01)
+st.write("Hier stel je de kernparameters van je campagne in, zoals budget, duur, CPM en frequency cap.")
+st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100, help="Bepaal het totale beschikbare budget voor deze campagne.")
+st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"], help="Selecteer hoe lang de campagne loopt.")
+st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. aantal vertoningen per gebruiker)", 1, 20, st.session_state["frequency_cap"], help="Beperk het aantal keren dat een gebruiker de advertentie kan zien.")
+st.session_state["cpm"] = st.number_input("CPM (Kosten per 1000 impressies in €)", min_value=1, max_value=1000, value=st.session_state["cpm"], step=1, help="Bepaal de geschatte kosten per 1000 impressies.")
+st.session_state["attention"] = st.slider("Attention Score (0 - 1)", 0.0, 1.0, st.session_state["attention"], step=0.01, help="Hoeveel aandacht krijgt de advertentie gemiddeld?")
 
 # Media kanalen selectie
-# Hier bepaal je welke kanalen actief zijn voor de campagne
 st.header("📡 Media Kanalen")
+st.write("Vink de kanalen aan die je wilt gebruiken in deze campagne.")
 updated_channels = {}
 for channel, is_active in st.session_state["selected_channels"].items():
-    updated_channels[channel] = st.checkbox(f"{channel}", is_active)
+    updated_channels[channel] = st.checkbox(f"{channel}", is_active, help=f"Schakel {channel} in of uit.")
 st.session_state["selected_channels"] = updated_channels
 
 # Budget allocatie per kanaal
-# Hier stel je de verdeling van het budget per kanaal in
 st.header("📊 Media Allocatie (%)")
+st.write("Verdeel het budget over de geselecteerde kanalen.")
 for channel in st.session_state["selected_channels"]:
     if st.session_state["selected_channels"][channel]:
-        st.session_state["media_alloc"][channel] = st.slider(f"{channel} Allocatie", 0, 100, st.session_state["media_alloc"].get(channel, 20))
+        st.session_state["media_alloc"][channel] = st.slider(f"{channel} Allocatie", 0, 100, st.session_state["media_alloc"].get(channel, 20), help=f"Bepaal welk percentage van het budget naar {channel} gaat.")
 
 # Bereken en toon resultaten
 if st.button("Bereken Brand Lift"):
@@ -88,8 +83,9 @@ if st.button("Bereken Brand Lift"):
 
 # Resultaten tonen
 st.header("🚀 Resultaten en Analyse")
-st.metric(label="Geschatte Reach", value=int(st.session_state["reach"]))
-st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2))
+st.write("Hier zie je de impact van je campagne-instellingen.")
+st.metric(label="Geschatte Reach", value=int(st.session_state["reach"], help="Het geschatte aantal unieke gebruikers dat je campagne bereikt."))
+st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2), help="De voorspelde toename in merkimpact als gevolg van deze campagne.")
 
 fig, ax = plt.subplots()
 ax.barh(["Brand Lift"], [st.session_state["total_brand_lift"]], color='skyblue')
@@ -98,10 +94,11 @@ ax.set_title("Brand Lift Overzicht")
 st.pyplot(fig)
 
 # Exporteerbare CSV output
-# Hiermee kun je de campagne instellingen downloaden voor verdere analyse
 st.header("📂 Download Resultaten")
+st.write("Download de campagne-instellingen voor verdere analyse.")
 df = pd.DataFrame({"Kanaal": list(st.session_state["selected_channels"].keys()), "Allocatie (%)": list(st.session_state["media_alloc"].values())})
 csv = df.to_csv(index=False).encode('utf-8')
 st.download_button(label="Download CSV", data=csv, file_name="brand_lift_resultaten.csv", mime="text/csv")
 
 st.write("\n**Eerste versie van het model. Toekomstige iteraties zullen validatie en optimalisatie bevatten.**")
+
