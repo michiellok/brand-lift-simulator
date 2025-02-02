@@ -82,33 +82,3 @@ with tabs[2]:
         ax.set_title("Brand Lift per Kanaal")
         st.pyplot(fig)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
