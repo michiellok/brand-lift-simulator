@@ -84,7 +84,7 @@ if st.button("Bereken Brand Lift"):
 # Resultaten tonen
 st.header("🚀 Resultaten en Analyse")
 st.write("Hier zie je de impact van je campagne-instellingen.")
-st.metric(label="Geschatte Reach", value=int(st.session_state["reach"], help="Het geschatte aantal unieke gebruikers dat je campagne bereikt."))
+st.metric(label="Geschatte Reach", value=int(st.session_state["reach"]), help="Het geschatte aantal unieke gebruikers dat je campagne bereikt.")
 st.metric(label="Totale Brand Lift", value=round(st.session_state["total_brand_lift"], 2), help="De voorspelde toename in merkimpact als gevolg van deze campagne.")
 
 fig, ax = plt.subplots()
@@ -101,4 +101,3 @@ csv = df.to_csv(index=False).encode('utf-8')
 st.download_button(label="Download CSV", data=csv, file_name="brand_lift_resultaten.csv", mime="text/csv")
 
 st.write("\n**Eerste versie van het model. Toekomstige iteraties zullen validatie en optimalisatie bevatten.**")
-
