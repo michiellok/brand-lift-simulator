@@ -107,3 +107,4 @@ with tab5:
         st.bar_chart(df_scenario.set_index("Kanaal"))
     else:
         st.warning("⚠️ Geen media-allocatie beschikbaar. Ga naar 'Invoer' en stel een budget in.")
+
