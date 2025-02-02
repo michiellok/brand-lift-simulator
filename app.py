@@ -28,16 +28,11 @@ tab1, tab2, tab3, tab4 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optima
 # 1️⃣ Invoer tab
 with tab1:
     st.header("📊 Campagne-instellingen")
-    st.session_state["budget"] = st.number_input("Totaal Budget (in €) 🛈", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
-    st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen) 🛈", 1, 90, st.session_state["campaign_duration"])
-    
-    st.header("🔧 Extra variabelen")
-    st.session_state["cpm"] = st.slider("Cost per Mille (CPM in €) 🛈", 1, 50, st.session_state["cpm"])
-    st.session_state["frequency_cap"] = st.slider("Frequency Cap (max. frequentie per gebruiker) 🛈", 1, 20, st.session_state["frequency_cap"])
-    st.session_state["creative_effectiveness"] = st.slider("Creative Effectiveness Score (0-1) 🛈", 0.1, 1.0, st.session_state["creative_effectiveness"]), 0.1, 1.0, st.session_state["creative_effectiveness"])
+    st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
+    st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
     
     st.header("📡 Media Allocatie")
-    allocation_type = st.radio("Kies allocatiemethode: 🛈", ["Percentage", "Budget (€)"])
+    allocation_type = st.radio("Kies allocatiemethode:", ["Percentage", "Budget (€)"])
     
     if allocation_type == "Percentage":
         media_alloc = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in ["Display", "Video", "DOOH", "Social", "CTV"]}
@@ -64,24 +59,16 @@ with tab2:
     brand_lift_per_channel = {}
     for channel, alloc in st.session_state["media_alloc"].items():
         reach = (alloc / 100) * (st.session_state["budget"] / st.session_state["cpm"]) * min(st.session_state["campaign_duration"] / 30, 1)
-        brand_lift = reach * media_characteristics[channel]["attention"] * st.session_state["creative_effectiveness"]
+        brand_lift = reach * media_characteristics[channel]["attention"]
         brand_lift_per_channel[channel] = round(brand_lift, 2)
     
-    st.metric(label="🚀 Totale Brand Lift 🛈", value=round(sum(brand_lift_per_channel.values()), 2))
+    st.metric(label="🚀 Totale Brand Lift", value=round(sum(brand_lift_per_channel.values()), 2))
     st.bar_chart(pd.DataFrame(brand_lift_per_channel, index=["Brand Lift"]).T)
     
-    # Time Decay Chart
-    days = np.arange(1, st.session_state["campaign_duration"] + 1)
-    decay_rates = {"Display": 0.1, "Video": 0.08, "DOOH": 0.06, "Social": 0.09, "CTV": 0.07}
-    decay_values = {channel: [brand_lift_per_channel[channel] * np.exp(-decay_rates[channel] * d) for d in days] for channel in brand_lift_per_channel}
-    df_decay = pd.DataFrame(decay_values, index=days)
-    st.line_chart(df_decay)
-
 # 3️⃣ Optimalisatie tab
 with tab3:
     st.header("🔍 Optimalisatie Advies")
     optimal_alloc = {k: round(v * 1.1, 2) for k, v in st.session_state["media_alloc"].items()}
-    st.write("💡 Advies: Overweeg deze verdeling voor een betere brand lift:")
     st.json(optimal_alloc)
     df_comparison = pd.DataFrame({"Huidige Allocatie": st.session_state["media_alloc"], "Geoptimaliseerde Allocatie": optimal_alloc})
     st.bar_chart(df_comparison)
@@ -91,12 +78,4 @@ with tab4:
     st.header("📂 Download Resultaten")
     df_export = pd.DataFrame({"Kanaal": list(st.session_state["media_alloc"].keys()), "Huidige Allocatie": list(st.session_state["media_alloc"].values()), "Brand Lift": list(brand_lift_per_channel.values())})
     csv = df_export.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Download als CSV 🛈", data=csv, file_name="brand_lift_results.csv", mime='text/csv')
-
-
-
-
-
-
-
-
+    st.download_button("📥 Download als CSV", data=csv, file_name="brand_lift_results.csv", mime='text/csv')
