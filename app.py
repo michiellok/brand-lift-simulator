@@ -23,6 +23,8 @@ if "creative_effectiveness" not in st.session_state:
     st.session_state["creative_effectiveness"] = 0.7
 if "context_fit" not in st.session_state:
     st.session_state["context_fit"] = 0.5
+if "selected_channels" not in st.session_state:
+    st.session_state["selected_channels"] = ["Display", "Video", "DOOH", "Social", "CTV"]
 
 # Tabs maken
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Invoer", "🚀 Resultaten", "🔍 Optimalisatie", "📂 Export", "📈 Scenario's"])
@@ -33,13 +35,16 @@ with tab1:
     st.session_state["budget"] = st.number_input("Totaal Budget (in €)", min_value=100, max_value=1000000, value=st.session_state["budget"], step=100)
     st.session_state["campaign_duration"] = st.slider("Campagne Duur (dagen)", 1, 90, st.session_state["campaign_duration"])
     
+    st.header("📡 Kies Media Kanalen")
+    st.session_state["selected_channels"] = st.multiselect("Selecteer kanalen", ["Display", "Video", "DOOH", "Social", "CTV"], default=st.session_state["selected_channels"])
+    
     st.header("📡 Media Allocatie")
     allocation_type = st.radio("Kies allocatiemethode:", ["Percentage", "Budget (€)"])
     
     if allocation_type == "Percentage":
-        media_alloc = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in ["Display", "Video", "DOOH", "Social", "CTV"]}
+        media_alloc = {channel: st.slider(f"{channel} (%)", 0, 100, 20) for channel in st.session_state["selected_channels"]}
     else:
-        media_alloc = {channel: st.number_input(f"{channel} Budget (€)", min_value=0, max_value=st.session_state["budget"], value=st.session_state["budget"]//5, step=100) for channel in ["Display", "Video", "DOOH", "Social", "CTV"]}
+        media_alloc = {channel: st.number_input(f"{channel} Budget (€)", min_value=0, max_value=st.session_state["budget"], value=st.session_state["budget"]//5, step=100) for channel in st.session_state["selected_channels"]}
     
     st.session_state["media_alloc"] = media_alloc
     
@@ -92,16 +97,6 @@ with tab4:
     csv = df_export.to_csv(index=False).encode('utf-8')
     st.download_button("📥 Download als CSV", data=csv, file_name="brand_lift_results.csv", mime='text/csv')
 
-# Onderste sectie: Uitleg over variabelen
-st.header("📖 Uitleg over variabelen")
-st.write("- **Totaal Budget (€)**: Het totale budget voor de campagne.")
-st.write("- **Campagne Duur (dagen)**: De lengte van de campagne.")
-st.write("- **CPM (€)**: Kosten per duizend vertoningen.")
-st.write("- **Frequency Cap**: Maximaal aantal keer dat een gebruiker de advertentie ziet.")
-st.write("- **Creative Effectiveness**: Hoe goed de advertentie creatief presteert.")
-st.write("- **Context Fit**: Hoe goed de advertentie past bij de omgeving.")
-st.write("- **Media Allocatie (%)**: Hoe het budget wordt verdeeld over de kanalen.")
-st.write("- **Brand Lift**: De verwachte impact van de campagne op merkherkenning en engagement.")
 
 
 
