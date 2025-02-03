@@ -15,7 +15,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Titel
-st.title("📊 Media Optimalisatie")
+st.title("📊 Campagne Optimalisatie Adviseur")
 
 # Tabs voor structuur
 tab1, tab2, tab3 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse", "📈 ROI & Budget Optimalisatie"])
@@ -93,5 +93,28 @@ with tab1:
         st.subheader("📊 Impressies per Kanaal")
         fig = px.bar(st.session_state["optimalisatie_df"], x="Kanaal", y="Impressies", color="Kanaal", title="Impressies per Kanaal")
         st.plotly_chart(fig)
+
+with tab2:
+    st.subheader("🛠 Scenario Analyse")
+    if st.session_state["optimalisatie_df"] is not None:
+        scenario_budget_pct = st.slider("💰 Wat als we het budget verhogen? (in %)", min_value=100, max_value=200, value=100, step=5)
+        scenario_budget = (scenario_budget_pct / 100) * st.session_state["totaal_budget"]
+        impact_toename = scenario_budget / st.session_state["totaal_budget"]
+        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
+        optimalisatie_df["Budget Allocatie (€)"] *= impact_toename
+        optimalisatie_df["Impressies"] *= impact_toename
+        st.dataframe(optimalisatie_df)
+        fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Scenario Impact op Budgetverdeling")
+        st.plotly_chart(fig)
+
+with tab3:
+    st.subheader("📈 ROI & Budget Optimalisatie")
+    if st.session_state["optimalisatie_df"] is not None:
+        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
+        optimalisatie_df["ROI"] = (optimalisatie_df["Budget Allocatie (€)"] / st.session_state["totaal_budget"]) * 100
+        st.dataframe(optimalisatie_df)
+        fig = px.line(optimalisatie_df, x="Kanaal", y="ROI", title="ROI per Kanaal")
+        st.plotly_chart(fig)
+
 
 
