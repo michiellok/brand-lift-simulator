@@ -57,13 +57,31 @@ with tab1:
     campagne_naam = st.text_input("📢 Campagne Naam", "")
     sector = st.selectbox("🏭 Sector", list(brand_uplift_sector.keys()))
     
-    # Basis Brand Uplift
-    standaard_uplift = brand_uplift_sector[sector]
+    # Invoerparameters
+    col1, col2 = st.columns(2)
+    with col1:
+        campagne_doel = st.selectbox("Wat is het primaire doel van je campagne?", [
+            "Merkbekendheid verhogen",
+            "Overweging stimuleren",
+            "Voorkeur opbouwen",
+            "Koopintentie versterken"
+        ])
+        totaal_budget = st.number_input("💰 Wat is het totale budget (in €)?", min_value=1000, max_value=1000000, value=50000)
+        st.session_state["totaal_budget"] = totaal_budget  # Sla budget op voor andere tabs
+        cpm = st.number_input("📉 Gemiddelde CPM (kosten per 1000 impressies in €)", min_value=1.0, max_value=50.0, value=5.0, step=0.5)
+    
+    with col2:
+        start_datum = st.date_input("📅 Startdatum")
+        eind_datum = st.date_input("📅 Einddatum")
+        weken = max((eind_datum - start_datum).days // 7, 1)  # Zorg ervoor dat weken minimaal 1 is
+        freq_cap = st.slider("🔄 Max. frequentie per gebruiker", min_value=1, max_value=20, value=5, step=1)
+        time_decay_factor = st.slider("⏳ Impact verloop over tijd ❔", min_value=0.01, max_value=1.0, value=0.5, step=0.01, help="Dit modelleert hoe de impact van advertenties afneemt over dagen.")
     
     # Kanaalselectie
     geselecteerde_kanalen = st.multiselect("📡 Selecteer kanalen", list(media_impact.keys()), default=["CTV", "Video", "Display"])
     
     # Bepalen van totale Brand Uplift op basis van media-impact
+    standaard_uplift = brand_uplift_sector[sector]
     totale_uplift_factor = sum([media_impact[k] for k in geselecteerde_kanalen])
     uiteindelijke_uplift = standaard_uplift * (1 + totale_uplift_factor)
     
@@ -86,23 +104,3 @@ with tab1:
         })
         st.success("✅ Mediaselectie berekend!")
 
-with tab2:
-    st.subheader("🛠 Scenario Analyse")
-    if st.session_state["optimalisatie_df"] is not None:
-        scenario_budget_pct = st.slider("💰 Wat als we het budget verhogen? (in %)", min_value=100, max_value=200, value=100, step=5)
-        scenario_budget = (scenario_budget_pct / 100) * st.session_state["totaal_budget"]
-        impact_toename = scenario_budget / st.session_state["totaal_budget"]
-        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
-        optimalisatie_df["Effectiviteit"] *= impact_toename
-        st.dataframe(optimalisatie_df)
-        fig = px.bar(optimalisatie_df, x="Kanaal", y="Effectiviteit", color="Kanaal", title="Scenario Impact op Brand Uplift")
-        st.plotly_chart(fig)
-
-with tab3:
-    st.subheader("📈 ROI & Brand Uplift Analyse")
-    if st.session_state["optimalisatie_df"] is not None:
-        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
-        optimalisatie_df["ROI"] = (optimalisatie_df["Effectiviteit"] / sum(media_impact.values())) * 100
-        st.dataframe(optimalisatie_df)
-        fig = px.line(optimalisatie_df, x="Kanaal", y="ROI", title="ROI per Kanaal")
-        st.plotly_chart(fig)
