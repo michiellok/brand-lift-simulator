@@ -91,9 +91,4 @@ with tab2:
         fig = px.bar(scenario_resultaat, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Scenario Impact op Budgetverdeling")
         st.plotly_chart(fig)
 
-with tab3:
-    st.subheader("🎨 Design Preview")
-    st.write("Deze sectie demonstreert hoe het dashboard er visueel strak uitziet met verbeterde UX en UI.")
-    st.image("https://source.unsplash.com/800x400/?technology,design", caption="Sfeerimpressie van een strak dashboard.")
 
-st.success("✨ Het dashboard is nu dynamisch en visueel verbeterd!")
