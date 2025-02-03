@@ -84,8 +84,3 @@ if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
     st.write(
         "Deze verdeling is gebaseerd op de geschatte impact per kanaal, rekening houdend met budget, bereik, effectiviteit en een afname van impact over tijd."
     )
-
-    # Uitleg over de tabelindex
-    st.write(
-        "🔹 **Wat betekenen de getallen 0,1,2,3,4 in de tabel?** Dit zijn enkel de rijnummers en hebben geen invloed op de berekeningen. Ze dienen als referentie voor de dataset."
-    )
