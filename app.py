@@ -51,30 +51,31 @@ with tab1:
     # Kanaalselectie
     geselecteerde_kanalen = st.multiselect("📡 Selecteer kanalen", ["CTV", "Video", "Display", "DOOH", "Social"], default=["CTV", "Video", "Display"])
     
-    # Budgetverdeling per week
-    st.subheader("📊 Budgetverdeling per week")
-    budget_per_week = []
-    for i in range(weken):
-        budget = st.slider(f"Week {i+1} budget (%)", 0, 100, 100 // weken, step=5)
-        budget_per_week.append(budget)
+    # Effectiviteitscores per kanaal
+    effectiviteit_scores = {"CTV": 0.9, "Video": 0.8, "Display": 0.7, "DOOH": 0.6, "Social": 0.5}
     
-    # Normaliseer budget per week zodat het totaal 100% is
-    budget_per_week = np.array(budget_per_week) / sum(budget_per_week) * totaal_budget if sum(budget_per_week) > 0 else np.zeros(len(budget_per_week))
-    
-    # Zorg ervoor dat budget_per_week en geselecteerde_kanalen dezelfde lengte hebben
-    while len(budget_per_week) < len(geselecteerde_kanalen):
-        budget_per_week = np.append(budget_per_week, 0)
-    while len(budget_per_week) > len(geselecteerde_kanalen):
-        budget_per_week = budget_per_week[:len(geselecteerde_kanalen)]
+    # Budgetverdeling per kanaal op basis van effectiviteit
+    totale_effectiviteit = sum([effectiviteit_scores[k] for k in geselecteerde_kanalen])
+    budget_allocatie = {k: (effectiviteit_scores[k] / totale_effectiviteit) * totaal_budget for k in geselecteerde_kanalen}
+    impressies_per_kanaal = {k: budget_allocatie[k] / cpm * 1000 for k in geselecteerde_kanalen}
     
     # Scenario-optimalisatie
     if st.button("🔍 Bereken optimale mediaselectie"):
-        st.session_state["optimalisatie_df"] = pd.DataFrame({"Kanaal": geselecteerde_kanalen, "Budget Allocatie (€)": budget_per_week})
+        st.session_state["optimalisatie_df"] = pd.DataFrame({
+            "Kanaal": list(budget_allocatie.keys()),
+            "Budget Allocatie (€)": list(budget_allocatie.values()),
+            "Impressies": list(impressies_per_kanaal.values()),
+            "Effectiviteit": [effectiviteit_scores[k] for k in budget_allocatie.keys()]
+        })
         st.success("✅ Mediaselectie berekend!")
         
         # Grafieken genereren
         st.subheader("📊 Budget Allocatie per Kanaal")
         fig = px.bar(st.session_state["optimalisatie_df"], x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Budget Allocatie per Kanaal")
+        st.plotly_chart(fig)
+        
+        st.subheader("📊 Impressies per Kanaal")
+        fig = px.bar(st.session_state["optimalisatie_df"], x="Kanaal", y="Impressies", color="Kanaal", title="Impressies per Kanaal")
         st.plotly_chart(fig)
 
 with tab2:
@@ -87,6 +88,7 @@ with tab2:
         impact_toename = scenario_budget / st.session_state["totaal_budget"]
         optimalisatie_df = st.session_state["optimalisatie_df"].copy()
         optimalisatie_df["Budget Allocatie (€)"] *= impact_toename
+        optimalisatie_df["Impressies"] *= impact_toename
         st.dataframe(optimalisatie_df)
         fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Scenario Impact op Budgetverdeling")
         st.plotly_chart(fig)
