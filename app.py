@@ -30,7 +30,7 @@ cpm = st.sidebar.number_input("📉 Gemiddelde CPM (kosten per 1000 impressies i
 start_datum = st.sidebar.date_input("📅 Startdatum")
 eind_datum = st.sidebar.date_input("📅 Einddatum")
 freq_cap = st.sidebar.slider("🔄 Max. frequentie per gebruiker", min_value=1, max_value=20, value=5, step=1)
-time_decay_factor = st.sidebar.slider("⏳ Impact decay factor ❔", min_value=0.01, max_value=1.0, value=0.5, step=0.01, help="Dit modelleert hoe de impact van advertenties over tijd afneemt. Hogere waarden betekenen een snellere afname van effectiviteit (bijvoorbeeld bij campagnes met korte levensduur of hoge advertentie-verzadiging).")
+time_decay_factor = st.sidebar.slider("⏳ Impact verloop over tijd ❔", min_value=0.01, max_value=1.0, value=0.5, step=0.01, help="Dit modelleert hoe de impact van advertenties afneemt over dagen. Hogere waarden betekenen snellere afname, wat relevant is bij korte campagnes of hoge advertentie-verzadiging.")
 
 # Kanaaldata en optimalisatie
 kanaal_effectiviteit = {
@@ -43,10 +43,11 @@ kanaal_effectiviteit = {
 # Optimalisatie: automatische budgetverdeling
 if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
     optimalisatie_data = []
+    dagen = (eind_datum - start_datum).days
     for kanaal in geselecteerde_kanalen:
         effectiviteit = kanaal_effectiviteit[campagne_doel][kanaal]
         bereik = (totaal_budget / cpm) * 1000  # Bereik berekenen
-        impact = effectiviteit * bereik * np.exp(-time_decay_factor)  # Berekening van impact met decay
+        impact = effectiviteit * bereik * np.exp(-time_decay_factor * dagen)  # Berekening impact over dagen
         optimalisatie_data.append([kanaal, effectiviteit, bereik, impact])
     
     optimalisatie_df = pd.DataFrame(optimalisatie_data, columns=["Kanaal", "Effectiviteit", "Bereik", "Impact"])
@@ -68,19 +69,25 @@ if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
         "Deze waarden zijn gebaseerd op historische data en expertbeoordelingen."
     )
     
-    # Grafiek: Optimale budgetallocatie
-    fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Optimale Budgetverdeling per Kanaal")
-    st.plotly_chart(fig)
+    # Alternatief voor impact over tijd: Optimalisatie-advies per looptijd
+    st.subheader("📊 Optimalisatie-advies over de looptijd")
+    st.write(
+        "De impact van je campagne kan afnemen naarmate de dagen verstrijken. "
+        "Bij een **korte campagne** met een hoge impact decay is het verstandig het budget direct hoog in te zetten. "
+        "Bij een **langere campagne** met lage impact decay is een evenwichtige verdeling beter."
+    )
     
-    # Scenario-analyse: impact over tijd
-    st.subheader("⏳ Scenario-analyse: Impact verloop over tijd")
-    impact_df = optimalisatie_df.copy()
-    impact_df["Impact Over Tijd"] = impact_df["Impact"] * np.exp(-time_decay_factor * np.arange(len(impact_df)))
-    fig2 = px.line(impact_df, x="Kanaal", y="Impact Over Tijd", title="Impact verloop per kanaal over tijd")
-    st.plotly_chart(fig2)
+    # Grafiek: Impact per dag
+    dagen_range = np.arange(1, dagen + 1)
+    impact_per_dag = np.exp(-time_decay_factor * dagen_range)
+    impact_df = pd.DataFrame({"Dag": dagen_range, "Relatieve Impact": impact_per_dag})
+    fig = px.line(impact_df, x="Dag", y="Relatieve Impact", title="Impact verloop over de looptijd")
+    st.plotly_chart(fig)
     
     # Extra uitleg over de optimalisatie
     st.subheader("🔍 Hoe is dit advies tot stand gekomen?")
     st.write(
         "Deze verdeling is gebaseerd op de geschatte impact per kanaal, rekening houdend met budget, bereik, effectiviteit en een afname van impact over tijd."
     )
+    
+   
