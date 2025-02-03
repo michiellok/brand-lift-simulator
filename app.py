@@ -110,3 +110,4 @@ with tab1:
     fig = px.bar(uplift_df, x="Type", y="Brand Uplift (%)", title="Impact van Media Keuze op Brand Uplift", color="Type")
     st.plotly_chart(fig)
 
+
