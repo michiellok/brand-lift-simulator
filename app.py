@@ -18,7 +18,7 @@ st.markdown("""
 st.title("📊 Campagne Optimalisatie Adviseur")
 
 # Tabs voor structuur
-tab1, tab2, tab3 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse", "🎨 Design Preview"])
+tab1, tab2, = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse"])
 
 with tab1:
     st.subheader("📌 Campagne-instellingen")
