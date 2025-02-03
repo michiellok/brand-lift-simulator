@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 # Titel
-st.title("📊 Impact Campagne Optimalisatie Adviseur")
+st.title("📊 Campagne Optimalisatie Adviseur")
 
 # Invoerparameters van de gebruiker
 st.sidebar.header("📌 Campagne-instellingen")
@@ -18,82 +18,58 @@ campagne_doel = st.sidebar.selectbox("Wat is het primaire doel van je campagne?"
     "Koopintentie versterken"
 ])
 
-# Stap 2: Selecteer de kanalen en hun budgetverdeling
-st.sidebar.subheader("Stap 2: Selecteer kanalen en budgetverdeling")
-channels = ["CTV", "Video", "Display", "DOOH", "Social"]
-geselecteerde_kanalen = st.sidebar.multiselect("Selecteer de advertentiekanalen", options=channels, default=channels)
-
-# Budget sliders per kanaal
+# Stap 2: Voer campagnedetails in
+st.sidebar.subheader("Stap 2: Voer campagnedetails in")
 totaal_budget = st.sidebar.number_input("💰 Wat is het totale budget (in €)?", min_value=1000, max_value=1000000, value=50000)
-budget_allocatie = {}
-st.sidebar.subheader("💰 Budgetverdeling per kanaal")
-for kanaal in geselecteerde_kanalen:
-    budget_allocatie[kanaal] = st.sidebar.slider(f"Budgetpercentage {kanaal}", min_value=0, max_value=100, value=int(100/len(geselecteerde_kanalen)), step=5)
+cpm = st.sidebar.number_input("📉 Gemiddelde CPM (kosten per 1000 impressies in €)", min_value=1.0, max_value=50.0, value=5.0, step=0.5)
+start_datum = st.sidebar.date_input("📅 Startdatum")
+eind_datum = st.sidebar.date_input("📅 Einddatum")
+freq_cap = st.sidebar.slider("🔄 Max. frequentie per gebruiker", min_value=1, max_value=20, value=5, step=1)
+time_decay_factor = st.sidebar.slider("⏳ Impact decay factor", min_value=0.01, max_value=1.0, value=0.5, step=0.01)
 
-# Normalisatie naar 100%
-totaal_percentage = sum(budget_allocatie.values())
-for kanaal in budget_allocatie:
-    budget_allocatie[kanaal] = (budget_allocatie[kanaal] / totaal_percentage) * totaal_budget
+# Kanaaldata en optimalisatie
+channels = ["CTV", "Video", "Display", "DOOH", "Social"]
+kanaal_effectiviteit = {
+    "Merkbekendheid verhogen": {"CTV": 0.9, "Video": 0.8, "Display": 0.7, "DOOH": 0.9, "Social": 0.6},
+    "Overweging stimuleren": {"CTV": 0.6, "Video": 0.9, "Display": 0.7, "DOOH": 0.7, "Social": 0.8},
+    "Voorkeur opbouwen": {"CTV": 0.5, "Video": 0.8, "Display": 0.9, "DOOH": 0.6, "Social": 0.7},
+    "Koopintentie versterken": {"CTV": 0.4, "Video": 0.7, "Display": 0.8, "DOOH": 0.5, "Social": 0.9}
+}
 
-# Stap 3: Selecteer de campagneduur
-st.sidebar.subheader("Stap 3: Kies de periode van de campagne")
-start_datum = st.sidebar.date_input("Startdatum")
-eind_datum = st.sidebar.date_input("Einddatum")
-
-# Stap 4: Frequentie cap instellen
-st.sidebar.subheader("Stap 4: Frequentie cap instellen")
-freq_cap = st.sidebar.slider("Maximale frequentie per gebruiker", min_value=1, max_value=20, value=5, step=1)
-
-# Stap 5: Simuleer de impact over tijd
-st.sidebar.subheader("Stap 5: Impact verloop over tijd")
-time_decay_factor = st.sidebar.slider("Impact decay factor", min_value=0.01, max_value=1.0, value=0.5, step=0.01)
-
-# Advies genereren
-if st.sidebar.button("🔍 Genereer Advies"):
-    np.random.seed(42)
-    data = {
-        "Kanaal": np.random.choice(geselecteerde_kanalen, 100),
-        "Effectiviteit": np.random.uniform(0.5, 1.0, 100),
-        "Bereik": np.random.randint(100000, 5000000, 100),
-        "Kosten per 1000 bereikte personen": np.random.uniform(2, 15, 100)
-    }
-    df = pd.DataFrame(data)
-    df["Impact Over Tijd"] = df["Effectiviteit"] * np.exp(-time_decay_factor * np.arange(len(df)))
-    df["Geschatte Impact Score"] = df["Impact Over Tijd"] * (df["Bereik"] / df["Kosten per 1000 bereikte personen"]) * df["Kanaal"].map(budget_allocatie)
-
-    def genereer_advies():
-        advies = ""
-        if campagne_doel == "Merkbekendheid verhogen":
-            advies += "Focus op kanalen met een breed bereik zoals **CTV en DOOH**. Deze zorgen voor hoge zichtbaarheid."
-        elif campagne_doel == "Overweging stimuleren":
-            advies += "Gebruik **Video en Social** om interactie en engagement met de doelgroep te vergroten."
-        elif campagne_doel == "Voorkeur opbouwen":
-            advies += "Zorg voor een consistente boodschap via **Display en Video**, gecombineerd met herhaalde exposure."
-        elif campagne_doel == "Koopintentie versterken":
-            advies += "Optimaliseer targeting op basis van **retargeting en high-attention formats** zoals DOOH en Social."
-        return advies
-
+# Optimalisatie: automatische budgetverdeling
+if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
+    optimalisatie_data = []
+    for kanaal in channels:
+        effectiviteit = kanaal_effectiviteit[campagne_doel][kanaal]
+        bereik = (totaal_budget / cpm) * 1000  # Bereik berekenen
+        impact = effectiviteit * bereik * np.exp(-time_decay_factor)  # Berekening van impact met decay
+        optimalisatie_data.append([kanaal, effectiviteit, bereik, impact])
+    
+    optimalisatie_df = pd.DataFrame(optimalisatie_data, columns=["Kanaal", "Effectiviteit", "Bereik", "Impact"])
+    optimalisatie_df = optimalisatie_df.sort_values(by="Impact", ascending=False)
+    
+    # Optimale verdeling bepalen
+    totaal_impact = optimalisatie_df["Impact"].sum()
+    optimalisatie_df["Budget Allocatie"] = (optimalisatie_df["Impact"] / totaal_impact) * totaal_budget
+    
     # Advies tonen
-    st.subheader("📢 Advies voor jouw campagne")
-    st.write(genereer_advies())
-
-    # Grafiek: Budgetverdeling per kanaal
-    st.subheader("💰 Budgetverdeling per kanaal")
-    budget_per_kanaal = pd.DataFrame(list(budget_allocatie.items()), columns=["Kanaal", "Budget"])
-    fig = px.bar(budget_per_kanaal, x="Kanaal", y="Budget", color="Kanaal", title="Toegekend budget per kanaal")
+    st.subheader("📢 Aanbevolen Mediaselectie en Budgetverdeling")
+    st.write("Op basis van het campagnedoel, budget en effectiviteit per kanaal is dit de optimale verdeling:")
+    st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie", "Bereik", "Effectiviteit"]])
+    
+    # Grafiek: Optimale budgetallocatie
+    fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie", color="Kanaal", title="Optimale Budgetverdeling per Kanaal")
     st.plotly_chart(fig)
-
+    
     # Scenario-analyse: impact over tijd
     st.subheader("⏳ Scenario-analyse: Impact verloop over tijd")
-    impact_df = df.groupby("Kanaal")["Impact Over Tijd"].mean().reset_index()
+    impact_df = optimalisatie_df.copy()
+    impact_df["Impact Over Tijd"] = impact_df["Impact"] * np.exp(-time_decay_factor * np.arange(len(impact_df)))
     fig2 = px.line(impact_df, x="Kanaal", y="Impact Over Tijd", title="Impact verloop per kanaal over tijd")
     st.plotly_chart(fig2)
-
+    
     # Extra uitleg over de optimalisatie
     st.subheader("🔍 Hoe is dit advies tot stand gekomen?")
     st.write(
-        "Het model analyseert de gekozen doelen, kanalen, looptijd en budgetverdeling om een strategie op te stellen. "
-        "De belangrijkste overwegingen zijn het bereik van elk kanaal, de geschatte effectiviteit en de kosten per 1000 vertoningen. "
-        "Door slimme budgetallocatie worden kanalen geoptimaliseerd om de beste impact te realiseren. "
-        "De tijdsafhankelijke impact wordt meegenomen in het advies met een decay-factor om afnemende effectiviteit te modelleren."
+        "Deze verdeling is gebaseerd op de geschatte impact per kanaal, rekening houdend met budget, bereik, effectiviteit en een afname van impact over tijd."
     )
