@@ -41,7 +41,7 @@ with tab1:
     with col2:
         start_datum = st.date_input("📅 Startdatum")
         eind_datum = st.date_input("📅 Einddatum")
-        weken = (eind_datum - start_datum).days // 7
+        weken = max((eind_datum - start_datum).days // 7, 1)  # Zorg ervoor dat weken minimaal 1 is
         freq_cap = st.slider("🔄 Max. frequentie per gebruiker", min_value=1, max_value=20, value=5, step=1)
         time_decay_factor = st.slider("⏳ Impact verloop over tijd ❔", min_value=0.01, max_value=1.0, value=0.5, step=0.01, help="Dit modelleert hoe de impact van advertenties afneemt over dagen.")
     
@@ -50,8 +50,13 @@ with tab1:
     
     # Budgetverdeling per week
     st.subheader("📊 Budgetverdeling per week")
-    budget_per_week = st.slider("Verdeel het budget over de weken (%)", 0, 100, [100 // max(1, weken)] * max(1, weken), step=5)
-    budget_per_week = np.array(budget_per_week) / 100 * totaal_budget
+    budget_per_week = []
+    for i in range(weken):
+        budget = st.slider(f"Week {i+1} budget (%)", 0, 100, 100 // weken, step=5)
+        budget_per_week.append(budget)
+    
+    # Normaliseer budget per week zodat het totaal 100% is
+    budget_per_week = np.array(budget_per_week) / sum(budget_per_week) * totaal_budget
     
     # Scenario-optimalisatie
     if st.button("🔍 Bereken optimale mediaselectie"):
@@ -86,3 +91,4 @@ with tab1:
         impact_df = pd.DataFrame({"Week": range(weken + 1), "Impact Factor": impact_over_weken})
         fig = px.line(impact_df, x="Week", y="Impact Factor", title="Impact verloop per week")
         st.plotly_chart(fig)
+
