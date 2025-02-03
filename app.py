@@ -74,6 +74,16 @@ with tab1:
         
         st.subheader("📢 Optimale Budgetverdeling")
         st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie (€)", "Bereik", "Effectiviteit"]].reset_index(drop=True))
+        
+        # Optimalisatieadvies over tijd
+        st.subheader("📊 Optimalisatieadvies over Tijd")
+        st.write("Deze verdeling houdt rekening met de afname van impact over tijd. Om het maximale uit je budget te halen:")
+        if time_decay_factor > 0.7:
+            st.write("📉 **Hoge impact decay:** Concentreer je budget in de eerste helft van de campagne om maximaal effect te halen.")
+        elif time_decay_factor < 0.3:
+            st.write("📈 **Lage impact decay:** Verspreid je budget gelijkmatiger over de looptijd voor consistente merkopbouw.")
+        else:
+            st.write("⚖️ **Gemiddelde impact decay:** Gebruik een balans tussen vroege intensiteit en doorlopende aanwezigheid.")
 
 with tab2:
     st.subheader("🛠 Scenario Analyse")
@@ -81,11 +91,13 @@ with tab2:
         st.warning("🔹 Voer eerst een berekening uit in het tabblad 'Basis Optimalisatie'.")
     else:
         optimalisatie_df = st.session_state["optimalisatie_df"].copy()
-        scenario_budget = st.slider("💰 Wat als we het budget verhogen?", min_value=totaal_budget, max_value=totaal_budget*2, value=totaal_budget)
+        scenario_budget_pct = st.slider("💰 Wat als we het budget verhogen? (in %)", min_value=100, max_value=200, value=100, step=5)
+        scenario_budget = (scenario_budget_pct / 100) * totaal_budget
         impact_toename = scenario_budget / totaal_budget
         optimalisatie_df["Budget Allocatie (€)"] *= impact_toename
         st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie (€)", "Impact"]].reset_index(drop=True))
         fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Scenario Impact op Budgetverdeling")
         st.plotly_chart(fig)
+
 
 
