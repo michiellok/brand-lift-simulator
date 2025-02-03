@@ -92,3 +92,4 @@ with tab4:
         st.dataframe(optimalisatie_df)
         fig = px.pie(optimalisatie_df, names="Kanaal", values="Budget Allocation (%)", title="Optimale Budget Verdeling")
         st.plotly_chart(fig)
+
