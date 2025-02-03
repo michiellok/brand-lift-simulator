@@ -18,7 +18,7 @@ st.markdown("""
 st.title("📊 Campagne Optimalisatie Adviseur")
 
 # Tabs voor structuur
-tab1, tab2, tab3 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse", "📥 Export Resultaten"])
+tab1, tab2 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse"])
 
 if "optimalisatie_df" not in st.session_state:
     st.session_state["optimalisatie_df"] = None
@@ -82,9 +82,16 @@ with tab1:
         fig = px.line(impact_df, x="Dagen", y="Impact Factor", title="Impact verloop over tijd")
         st.plotly_chart(fig)
 
-with tab3:
-    st.subheader("📥 Export Resultaten")
-    if st.session_state["optimalisatie_df"] is not None:
-        st.download_button("📥 Download resultaten als CSV", data=st.session_state["optimalisatie_df"].to_csv(index=False).encode("utf-8"), file_name="campagne_resultaten.csv", mime="text/csv")
-    else:
+with tab2:
+    st.subheader("🛠 Scenario Analyse")
+    if st.session_state["optimalisatie_df"] is None:
         st.warning("🔹 Voer eerst een berekening uit in het tabblad 'Basis Optimalisatie'.")
+    else:
+        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
+        scenario_budget_pct = st.slider("💰 Wat als we het budget verhogen? (in %)", min_value=100, max_value=200, value=100, step=5)
+        scenario_budget = (scenario_budget_pct / 100) * totaal_budget
+        impact_toename = scenario_budget / totaal_budget
+        optimalisatie_df["Budget Allocatie (€)"] *= impact_toename
+        st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie (€)", "Impact"]].reset_index(drop=True))
+        fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Scenario Impact op Budgetverdeling")
+        st.plotly_chart(fig)
