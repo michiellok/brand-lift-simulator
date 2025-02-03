@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 
 # Titel
-st.title("📊 Campagne Optimalisatie Adviseur")
+st.title("📊 Impact Campagne Optimalisatie Adviseur")
 
 # Invoerparameters van de gebruiker
 st.sidebar.header("📌 Campagne-instellingen")
@@ -44,6 +44,10 @@ eind_datum = st.sidebar.date_input("Einddatum")
 st.sidebar.subheader("Stap 4: Frequentie cap instellen")
 freq_cap = st.sidebar.slider("Maximale frequentie per gebruiker", min_value=1, max_value=20, value=5, step=1)
 
+# Stap 5: Simuleer de impact over tijd
+st.sidebar.subheader("Stap 5: Impact verloop over tijd")
+time_decay_factor = st.sidebar.slider("Impact decay factor", min_value=0.01, max_value=1.0, value=0.5, step=0.01)
+
 # Advies genereren
 if st.sidebar.button("🔍 Genereer Advies"):
     np.random.seed(42)
@@ -54,7 +58,8 @@ if st.sidebar.button("🔍 Genereer Advies"):
         "Kosten per 1000 bereikte personen": np.random.uniform(2, 15, 100)
     }
     df = pd.DataFrame(data)
-    df["Geschatte Impact Score"] = df["Effectiviteit"] * (df["Bereik"] / df["Kosten per 1000 bereikte personen"]) * df["Kanaal"].map(budget_allocatie)
+    df["Impact Over Tijd"] = df["Effectiviteit"] * np.exp(-time_decay_factor * np.arange(len(df)))
+    df["Geschatte Impact Score"] = df["Impact Over Tijd"] * (df["Bereik"] / df["Kosten per 1000 bereikte personen"]) * df["Kanaal"].map(budget_allocatie)
 
     def genereer_advies():
         advies = ""
@@ -78,19 +83,17 @@ if st.sidebar.button("🔍 Genereer Advies"):
     fig = px.bar(budget_per_kanaal, x="Kanaal", y="Budget", color="Kanaal", title="Toegekend budget per kanaal")
     st.plotly_chart(fig)
 
+    # Scenario-analyse: impact over tijd
+    st.subheader("⏳ Scenario-analyse: Impact verloop over tijd")
+    impact_df = df.groupby("Kanaal")["Impact Over Tijd"].mean().reset_index()
+    fig2 = px.line(impact_df, x="Kanaal", y="Impact Over Tijd", title="Impact verloop per kanaal over tijd")
+    st.plotly_chart(fig2)
+
     # Extra uitleg over de optimalisatie
     st.subheader("🔍 Hoe is dit advies tot stand gekomen?")
     st.write(
         "Het model analyseert de gekozen doelen, kanalen, looptijd en budgetverdeling om een strategie op te stellen. "
         "De belangrijkste overwegingen zijn het bereik van elk kanaal, de geschatte effectiviteit en de kosten per 1000 vertoningen. "
-        "Door slimme budgetallocatie worden kanalen geoptimaliseerd om de beste impact te realiseren."
-    )
-
-    st.subheader("📋 Belangrijke overwegingen in het model")
-    st.write(
-        "✅ **Bereik per kanaal**: Sommige kanalen hebben een groter publiek en zijn geschikt voor brede awareness."
-        "✅ **Effectiviteit**: Engagement-kanalen zoals Video en Social zijn beter voor overweging en voorkeur."
-        "✅ **Kosten per 1000 impressies**: DOOH en CTV zijn duurder, maar hebben vaak een hogere attentiewaarde."
-        "✅ **Looptijd en consistentie**: Een langere campagne met consistente exposure levert vaak betere resultaten."
-        "✅ **Frequentie cap**: Een optimale frequentie voorkomt overexposure en verbetert de efficiëntie van de campagne."
+        "Door slimme budgetallocatie worden kanalen geoptimaliseerd om de beste impact te realiseren. "
+        "De tijdsafhankelijke impact wordt meegenomen in het advies met een decay-factor om afnemende effectiviteit te modelleren."
     )
