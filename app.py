@@ -18,7 +18,7 @@ st.markdown("""
 st.title("📊 Campagne Optimalisatie Adviseur")
 
 # Tabs voor structuur
-tab1, tab2 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse"])
+tab1, tab2, tab3 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse", "📈 ROI & Budget Optimalisatie"])
 
 if "optimalisatie_df" not in st.session_state:
     st.session_state["optimalisatie_df"] = None
@@ -41,16 +41,21 @@ with tab1:
     with col2:
         start_datum = st.date_input("📅 Startdatum")
         eind_datum = st.date_input("📅 Einddatum")
+        weken = (eind_datum - start_datum).days // 7
         freq_cap = st.slider("🔄 Max. frequentie per gebruiker", min_value=1, max_value=20, value=5, step=1)
         time_decay_factor = st.slider("⏳ Impact verloop over tijd ❔", min_value=0.01, max_value=1.0, value=0.5, step=0.01, help="Dit modelleert hoe de impact van advertenties afneemt over dagen.")
     
     # Kanaalselectie
     geselecteerde_kanalen = st.multiselect("📡 Selecteer kanalen", ["CTV", "Video", "Display", "DOOH", "Social"], default=["CTV", "Video", "Display"])
     
+    # Budgetverdeling per week
+    st.subheader("📊 Budgetverdeling per week")
+    budget_per_week = st.slider("Verdeel het budget over de weken (%)", 0, 100, [100 // max(1, weken)] * max(1, weken), step=5)
+    budget_per_week = np.array(budget_per_week) / 100 * totaal_budget
+    
     # Scenario-optimalisatie
     if st.button("🔍 Bereken optimale mediaselectie"):
         optimalisatie_data = []
-        dagen = (eind_datum - start_datum).days
         totaal_bereik = (totaal_budget / cpm) * 1000
         
         kanaal_effectiviteit = {
@@ -63,7 +68,7 @@ with tab1:
         for kanaal in geselecteerde_kanalen:
             effectiviteit = kanaal_effectiviteit[campagne_doel][kanaal]
             bereik = (effectiviteit / sum([kanaal_effectiviteit[campagne_doel][k] for k in geselecteerde_kanalen])) * totaal_bereik
-            impact = effectiviteit * bereik * np.exp(-time_decay_factor * dagen)
+            impact = effectiviteit * bereik * np.exp(-time_decay_factor * weken)
             optimalisatie_data.append([kanaal, effectiviteit, bereik, impact])
         
         optimalisatie_df = pd.DataFrame(optimalisatie_data, columns=["Kanaal", "Effectiviteit", "Bereik", "Impact"])
@@ -74,24 +79,10 @@ with tab1:
         
         st.subheader("📢 Optimale Budgetverdeling")
         st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie (€)", "Bereik", "Effectiviteit"]].reset_index(drop=True))
-        
-        # Lijngrafiek voor impact verloop over tijd
-        st.subheader("📊 Impact Verloop over Tijd")
-        impact_over_tijd = [np.exp(-time_decay_factor * d) for d in range(dagen + 1)]
-        impact_df = pd.DataFrame({"Dagen": range(dagen + 1), "Impact Factor": impact_over_tijd})
-        fig = px.line(impact_df, x="Dagen", y="Impact Factor", title="Impact verloop over tijd")
-        st.plotly_chart(fig)
 
-with tab2:
-    st.subheader("🛠 Scenario Analyse")
-    if st.session_state["optimalisatie_df"] is None:
-        st.warning("🔹 Voer eerst een berekening uit in het tabblad 'Basis Optimalisatie'.")
-    else:
-        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
-        scenario_budget_pct = st.slider("💰 Wat als we het budget verhogen? (in %)", min_value=0, max_value=100, value=0, step=5)
-        scenario_budget = (scenario_budget_pct / 100) * totaal_budget
-        impact_toename = scenario_budget / totaal_budget
-        optimalisatie_df["Budget Allocatie (€)"] *= impact_toename
-        st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie (€)", "Impact"]].reset_index(drop=True))
-        fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Scenario Impact op Budgetverdeling")
+        # Lijngrafiek voor impact verloop per week
+        st.subheader("📊 Impact Verloop per Week")
+        impact_over_weken = [np.exp(-time_decay_factor * w) for w in range(weken + 1)]
+        impact_df = pd.DataFrame({"Week": range(weken + 1), "Impact Factor": impact_over_weken})
+        fig = px.line(impact_df, x="Week", y="Impact Factor", title="Impact verloop per week")
         st.plotly_chart(fig)
