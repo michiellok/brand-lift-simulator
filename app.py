@@ -18,17 +18,21 @@ campagne_doel = st.sidebar.selectbox("Wat is het primaire doel van je campagne?"
     "Koopintentie versterken"
 ])
 
-# Stap 2: Voer campagnedetails in
-st.sidebar.subheader("Stap 2: Voer campagnedetails in")
+# Stap 2: Selecteer de kanalen
+st.sidebar.subheader("Stap 2: Selecteer kanalen")
+channels = ["CTV", "Video", "Display", "DOOH", "Social"]
+geselecteerde_kanalen = st.sidebar.multiselect("Selecteer de advertentiekanalen", options=channels, default=channels)
+
+# Stap 3: Voer campagnedetails in
+st.sidebar.subheader("Stap 3: Voer campagnedetails in")
 totaal_budget = st.sidebar.number_input("💰 Wat is het totale budget (in €)?", min_value=1000, max_value=1000000, value=50000)
 cpm = st.sidebar.number_input("📉 Gemiddelde CPM (kosten per 1000 impressies in €)", min_value=1.0, max_value=50.0, value=5.0, step=0.5)
 start_datum = st.sidebar.date_input("📅 Startdatum")
 eind_datum = st.sidebar.date_input("📅 Einddatum")
 freq_cap = st.sidebar.slider("🔄 Max. frequentie per gebruiker", min_value=1, max_value=20, value=5, step=1)
-time_decay_factor = st.sidebar.slider("⏳ Impact decay factor", min_value=0.01, max_value=1.0, value=0.5, step=0.01)
+time_decay_factor = st.sidebar.slider("⏳ Impact decay factor ❔", min_value=0.01, max_value=1.0, value=0.5, step=0.01, help="Dit modelleert hoe de impact van advertenties over tijd afneemt. Hogere waarden betekenen een snellere afname van effectiviteit (bijvoorbeeld bij campagnes met korte levensduur of hoge advertentie-verzadiging).")
 
 # Kanaaldata en optimalisatie
-channels = ["CTV", "Video", "Display", "DOOH", "Social"]
 kanaal_effectiviteit = {
     "Merkbekendheid verhogen": {"CTV": 0.9, "Video": 0.8, "Display": 0.7, "DOOH": 0.9, "Social": 0.6},
     "Overweging stimuleren": {"CTV": 0.6, "Video": 0.9, "Display": 0.7, "DOOH": 0.7, "Social": 0.8},
@@ -39,7 +43,7 @@ kanaal_effectiviteit = {
 # Optimalisatie: automatische budgetverdeling
 if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
     optimalisatie_data = []
-    for kanaal in channels:
+    for kanaal in geselecteerde_kanalen:
         effectiviteit = kanaal_effectiviteit[campagne_doel][kanaal]
         bereik = (totaal_budget / cpm) * 1000  # Bereik berekenen
         impact = effectiviteit * bereik * np.exp(-time_decay_factor)  # Berekening van impact met decay
@@ -57,6 +61,13 @@ if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
     st.write("Op basis van het campagnedoel, budget en effectiviteit per kanaal is dit de optimale verdeling:")
     st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie (€)", "Bereik", "Effectiviteit"]])
     
+    # Uitleg onder de tabel
+    st.write(
+        "**Effectiviteit:** Dit is een gewogen factor die aangeeft hoe goed een kanaal presteert voor het gekozen campagnedoel. "
+        "Een hogere waarde betekent een groter effect op het campagnedoel. "
+        "Deze waarden zijn gebaseerd op historische data en expertbeoordelingen."
+    )
+    
     # Grafiek: Optimale budgetallocatie
     fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Optimale Budgetverdeling per Kanaal")
     st.plotly_chart(fig)
@@ -73,15 +84,8 @@ if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
     st.write(
         "Deze verdeling is gebaseerd op de geschatte impact per kanaal, rekening houdend met budget, bereik, effectiviteit en een afname van impact over tijd."
     )
-    
-    # Uitleg over effectiviteit en impact decay factor
-    st.subheader("📘 Wat betekenen Effectiviteit en Impact Decay Factor?")
+
+    # Uitleg over de tabelindex
     st.write(
-        "**Effectiviteit:** Dit is een gewogen factor die aangeeft hoe goed een kanaal presteert voor het gekozen campagnedoel. "
-        "Een hogere waarde betekent een groter effect op het campagnedoel. "
-        "Deze waarden zijn gebaseerd op historische data en expertbeoordelingen."
-    )
-    st.write(
-        "**Impact Decay Factor:** Dit modelleert hoe de impact van advertenties over tijd afneemt. "
-        "Hogere waarden betekenen een snellere afname van effectiviteit (bijvoorbeeld bij campagnes met korte levensduur of hoge advertentie-verzadiging)."
+        "🔹 **Wat betekenen de getallen 0,1,2,3,4 in de tabel?** Dit zijn enkel de rijnummers en hebben geen invloed op de berekeningen. Ze dienen als referentie voor de dataset."
     )
