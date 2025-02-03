@@ -11,12 +11,9 @@ st.markdown("""
         .stButton>button {border-radius:10px; padding:10px; background:#005b96; color:white; font-size:16px;}
         .stSlider>div>div>div>div {background: #005b96;}
         .stSelectbox>div {border-radius:10px;}
-        .logo-container {position: absolute; top: 10px; left: 10px;}
+        
     </style>
 """, unsafe_allow_html=True)
-# Logo linksboven tonen
-logo_path = "/mnt/data/Screenshot 2024-09-23 at 12.35.44.png"
-st.sidebar.image(logo_path, width=120)  # Plaatst het logo in de sidebar
 
 # Titel
 st.title("📊 Campagne Optimalisatie Adviseur")
