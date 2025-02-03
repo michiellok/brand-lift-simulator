@@ -44,14 +44,16 @@ kanaal_effectiviteit = {
 if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
     optimalisatie_data = []
     dagen = (eind_datum - start_datum).days
+    totaal_bereik = (totaal_budget / cpm) * 1000  # Totale berekening van bereik
+    
     for kanaal in geselecteerde_kanalen:
         effectiviteit = kanaal_effectiviteit[campagne_doel][kanaal]
-        bereik = (totaal_budget / cpm) * 1000  # Bereik berekenen
+        bereik = (effectiviteit / sum([kanaal_effectiviteit[campagne_doel][k] for k in geselecteerde_kanalen])) * totaal_bereik
         impact = effectiviteit * bereik * np.exp(-time_decay_factor * dagen)  # Berekening impact over dagen
         optimalisatie_data.append([kanaal, effectiviteit, bereik, impact])
     
     optimalisatie_df = pd.DataFrame(optimalisatie_data, columns=["Kanaal", "Effectiviteit", "Bereik", "Impact"])
-    optimalisatie_df = optimalisatie_df.sort_values(by="Impact", ascending=False)
+    optimalisatie_df = optimalisatie_df.sort_values(by="Effectiviteit", ascending=False)
     
     # Optimale verdeling bepalen
     totaal_impact = optimalisatie_df["Impact"].sum()
@@ -60,7 +62,7 @@ if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
     # Advies tonen
     st.subheader("📢 Aanbevolen Mediaselectie en Budgetverdeling")
     st.write("Op basis van het campagnedoel, budget en effectiviteit per kanaal is dit de optimale verdeling:")
-    st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie (€)", "Bereik", "Effectiviteit"]])
+    st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie (€)", "Bereik", "Effectiviteit"]].reset_index(drop=True))
     
     # Uitleg onder de tabel
     st.write(
@@ -89,5 +91,3 @@ if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
     st.write(
         "Deze verdeling is gebaseerd op de geschatte impact per kanaal, rekening houdend met budget, bereik, effectiviteit en een afname van impact over tijd."
     )
-    
-   
