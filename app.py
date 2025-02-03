@@ -16,7 +16,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Titel
-st.title("📊 Campagne Optimalisatie Simulator")
+st.title("📊 Campagne Optimalisatie Adviseur")
 
 # Tabs voor structuur
 tab1, tab2, tab3 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse", "📈 ROI & Budget Optimalisatie"])
