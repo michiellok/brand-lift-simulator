@@ -18,7 +18,10 @@ st.markdown("""
 st.title("📊 Campagne Optimalisatie Adviseur")
 
 # Tabs voor structuur
-tab1, tab2, = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse"])
+tab1, tab2 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse"])
+
+if "optimalisatie_df" not in st.session_state:
+    st.session_state["optimalisatie_df"] = None
 
 with tab1:
     st.subheader("📌 Campagne-instellingen")
@@ -67,28 +70,24 @@ with tab1:
         optimalisatie_df = optimalisatie_df.sort_values(by="Effectiviteit", ascending=False)
         totaal_impact = optimalisatie_df["Impact"].sum()
         optimalisatie_df["Budget Allocatie (€)"] = (optimalisatie_df["Impact"] / totaal_impact) * totaal_budget
+        st.session_state["optimalisatie_df"] = optimalisatie_df
         
         st.subheader("📢 Optimale Budgetverdeling")
         st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie (€)", "Bereik", "Effectiviteit"]].reset_index(drop=True))
-        
-        fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Optimale Budgetverdeling per Kanaal")
-        st.plotly_chart(fig)
 
 with tab2:
     st.subheader("🛠 Scenario Analyse")
-    scenario_budget = st.slider("💰 Wat als we het budget verhogen?", min_value=totaal_budget, max_value=totaal_budget*2, value=totaal_budget)
-    scenario_cpm = st.slider("📉 Wat als de CPM verandert?", min_value=1.0, max_value=50.0, value=cpm, step=0.5)
-    scenario_mix = st.multiselect("📡 Wat als we de media-mix aanpassen?", ["CTV", "Video", "Display", "DOOH", "Social"], default=geselecteerde_kanalen)
-    
-    if st.button("🔄 Simuleer Scenario's"):
+    if st.session_state["optimalisatie_df"] is None:
+        st.warning("🔹 Voer eerst een berekening uit in het tabblad 'Basis Optimalisatie'.")
+    else:
+        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
+        scenario_budget = st.slider("💰 Wat als we het budget verhogen?", min_value=totaal_budget, max_value=totaal_budget*2, value=totaal_budget)
         impact_toename = scenario_budget / totaal_budget
-        impact_verandering = np.exp(-time_decay_factor * (eind_datum - start_datum).days)
-        scenario_resultaat = optimalisatie_df.copy()
-        scenario_resultaat["Budget Allocatie (€)"] *= impact_toename
-        scenario_resultaat["Impact"] *= impact_verandering
-        
-        st.dataframe(scenario_resultaat[["Kanaal", "Budget Allocatie (€)", "Impact"]].reset_index(drop=True))
-        fig = px.bar(scenario_resultaat, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Scenario Impact op Budgetverdeling")
+        optimalisatie_df["Budget Allocatie (€)"] *= impact_toename
+        st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie (€)", "Impact"]].reset_index(drop=True))
+        fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Scenario Impact op Budgetverdeling")
         st.plotly_chart(fig)
+
+
 
 
