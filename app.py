@@ -59,11 +59,17 @@ with tab1:
         budget_per_week.append(budget)
     
     # Normaliseer budget per week zodat het totaal 100% is
-    budget_per_week = np.array(budget_per_week) / sum(budget_per_week) * totaal_budget
+    budget_per_week = np.array(budget_per_week) / sum(budget_per_week) * totaal_budget if sum(budget_per_week) > 0 else np.zeros(len(budget_per_week))
+    
+    # Zorg ervoor dat budget_per_week en geselecteerde_kanalen dezelfde lengte hebben
+    while len(budget_per_week) < len(geselecteerde_kanalen):
+        budget_per_week = np.append(budget_per_week, 0)
+    while len(budget_per_week) > len(geselecteerde_kanalen):
+        budget_per_week = budget_per_week[:len(geselecteerde_kanalen)]
     
     # Scenario-optimalisatie
     if st.button("🔍 Bereken optimale mediaselectie"):
-        st.session_state["optimalisatie_df"] = pd.DataFrame({"Kanaal": geselecteerde_kanalen, "Budget Allocatie (€)": budget_per_week[:len(geselecteerde_kanalen)]})
+        st.session_state["optimalisatie_df"] = pd.DataFrame({"Kanaal": geselecteerde_kanalen, "Budget Allocatie (€)": budget_per_week})
         st.success("✅ Mediaselectie berekend!")
 
 with tab2:
