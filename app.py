@@ -50,15 +50,15 @@ if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
     
     # Optimale verdeling bepalen
     totaal_impact = optimalisatie_df["Impact"].sum()
-    optimalisatie_df["Budget Allocatie"] = (optimalisatie_df["Impact"] / totaal_impact) * totaal_budget
+    optimalisatie_df["Budget Allocatie (€)"] = (optimalisatie_df["Impact"] / totaal_impact) * totaal_budget
     
     # Advies tonen
     st.subheader("📢 Aanbevolen Mediaselectie en Budgetverdeling")
     st.write("Op basis van het campagnedoel, budget en effectiviteit per kanaal is dit de optimale verdeling:")
-    st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie", "Bereik", "Effectiviteit"]])
+    st.dataframe(optimalisatie_df[["Kanaal", "Budget Allocatie (€)", "Bereik", "Effectiviteit"]])
     
     # Grafiek: Optimale budgetallocatie
-    fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie", color="Kanaal", title="Optimale Budgetverdeling per Kanaal")
+    fig = px.bar(optimalisatie_df, x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Optimale Budgetverdeling per Kanaal")
     st.plotly_chart(fig)
     
     # Scenario-analyse: impact over tijd
@@ -72,4 +72,16 @@ if st.sidebar.button("🔍 Bereken optimale mediaselectie"):
     st.subheader("🔍 Hoe is dit advies tot stand gekomen?")
     st.write(
         "Deze verdeling is gebaseerd op de geschatte impact per kanaal, rekening houdend met budget, bereik, effectiviteit en een afname van impact over tijd."
+    )
+    
+    # Uitleg over effectiviteit en impact decay factor
+    st.subheader("📘 Wat betekenen Effectiviteit en Impact Decay Factor?")
+    st.write(
+        "**Effectiviteit:** Dit is een gewogen factor die aangeeft hoe goed een kanaal presteert voor het gekozen campagnedoel. "
+        "Een hogere waarde betekent een groter effect op het campagnedoel. "
+        "Deze waarden zijn gebaseerd op historische data en expertbeoordelingen."
+    )
+    st.write(
+        "**Impact Decay Factor:** Dit modelleert hoe de impact van advertenties over tijd afneemt. "
+        "Hogere waarden betekenen een snellere afname van effectiviteit (bijvoorbeeld bij campagnes met korte levensduur of hoge advertentie-verzadiging)."
     )
