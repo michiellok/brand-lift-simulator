@@ -88,7 +88,7 @@ with tab2:
         st.warning("🔹 Voer eerst een berekening uit in het tabblad 'Basis Optimalisatie'.")
     else:
         optimalisatie_df = st.session_state["optimalisatie_df"].copy()
-        scenario_budget_pct = st.slider("💰 Wat als we het budget verhogen? (in %)", min_value=0, max_value=100, value=100, step=5)
+        scenario_budget_pct = st.slider("💰 Wat als we het budget verhogen? (in %)", min_value=0, max_value=100, value=0, step=5)
         scenario_budget = (scenario_budget_pct / 100) * totaal_budget
         impact_toename = scenario_budget / totaal_budget
         optimalisatie_df["Budget Allocatie (€)"] *= impact_toename
