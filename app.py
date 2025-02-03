@@ -40,53 +40,57 @@ st.sidebar.subheader("Stap 3: Kies de periode van de campagne")
 start_datum = st.sidebar.date_input("Startdatum")
 eind_datum = st.sidebar.date_input("Einddatum")
 
-# Simulatie van een adviesmodel op basis van de input
-np.random.seed(42)
-data = {
-    "Kanaal": np.random.choice(geselecteerde_kanalen, 100),
-    "Effectiviteit": np.random.uniform(0.5, 1.0, 100),
-    "Bereik": np.random.randint(100000, 5000000, 100),
-    "Kosten per 1000 bereikte personen": np.random.uniform(2, 15, 100)
-}
-df = pd.DataFrame(data)
-df["Geschatte Impact Score"] = df["Effectiviteit"] * (df["Bereik"] / df["Kosten per 1000 bereikte personen"]) * df["Kanaal"].map(budget_allocatie)
+# Stap 4: Frequentie cap instellen
+st.sidebar.subheader("Stap 4: Frequentie cap instellen")
+freq_cap = st.sidebar.slider("Maximale frequentie per gebruiker", min_value=1, max_value=20, value=5, step=1)
 
-def genereer_advies():
-    advies = ""
-    if campagne_doel == "Merkbekendheid verhogen":
-        advies += "Focus op kanalen met een breed bereik zoals **CTV en DOOH**. Deze zorgen voor hoge zichtbaarheid."
-    elif campagne_doel == "Overweging stimuleren":
-        advies += "Gebruik **Video en Social** om interactie en engagement met de doelgroep te vergroten."
-    elif campagne_doel == "Voorkeur opbouwen":
-        advies += "Zorg voor een consistente boodschap via **Display en Video**, gecombineerd met herhaalde exposure."
-    elif campagne_doel == "Koopintentie versterken":
-        advies += "Optimaliseer targeting op basis van **retargeting en high-attention formats** zoals DOOH en Social."
-    return advies
+# Advies genereren
+if st.sidebar.button("🔍 Genereer Advies"):
+    np.random.seed(42)
+    data = {
+        "Kanaal": np.random.choice(geselecteerde_kanalen, 100),
+        "Effectiviteit": np.random.uniform(0.5, 1.0, 100),
+        "Bereik": np.random.randint(100000, 5000000, 100),
+        "Kosten per 1000 bereikte personen": np.random.uniform(2, 15, 100)
+    }
+    df = pd.DataFrame(data)
+    df["Geschatte Impact Score"] = df["Effectiviteit"] * (df["Bereik"] / df["Kosten per 1000 bereikte personen"]) * df["Kanaal"].map(budget_allocatie)
 
-# Advies tonen
-st.subheader("📢 Advies voor jouw campagne")
-st.write(genereer_advies())
+    def genereer_advies():
+        advies = ""
+        if campagne_doel == "Merkbekendheid verhogen":
+            advies += "Focus op kanalen met een breed bereik zoals **CTV en DOOH**. Deze zorgen voor hoge zichtbaarheid."
+        elif campagne_doel == "Overweging stimuleren":
+            advies += "Gebruik **Video en Social** om interactie en engagement met de doelgroep te vergroten."
+        elif campagne_doel == "Voorkeur opbouwen":
+            advies += "Zorg voor een consistente boodschap via **Display en Video**, gecombineerd met herhaalde exposure."
+        elif campagne_doel == "Koopintentie versterken":
+            advies += "Optimaliseer targeting op basis van **retargeting en high-attention formats** zoals DOOH en Social."
+        return advies
 
-# Grafiek: Budgetverdeling per kanaal
-st.subheader("💰 Budgetverdeling per kanaal")
-budget_per_kanaal = pd.DataFrame(list(budget_allocatie.items()), columns=["Kanaal", "Budget"])
-fig = px.bar(budget_per_kanaal, x="Kanaal", y="Budget", color="Kanaal", title="Toegekend budget per kanaal")
-st.plotly_chart(fig)
+    # Advies tonen
+    st.subheader("📢 Advies voor jouw campagne")
+    st.write(genereer_advies())
 
-# Extra uitleg over de optimalisatie
-st.subheader("🔍 Hoe is dit advies tot stand gekomen?")
-st.write(
-    "Het model analyseert de gekozen doelen, kanalen, looptijd en budgetverdeling om een strategie op te stellen. "
-    "De belangrijkste overwegingen zijn het bereik van elk kanaal, de geschatte effectiviteit en de kosten per 1000 vertoningen. "
-    "Door slimme budgetallocatie worden kanalen geoptimaliseerd om de beste impact te realiseren."
-)
+    # Grafiek: Budgetverdeling per kanaal
+    st.subheader("💰 Budgetverdeling per kanaal")
+    budget_per_kanaal = pd.DataFrame(list(budget_allocatie.items()), columns=["Kanaal", "Budget"])
+    fig = px.bar(budget_per_kanaal, x="Kanaal", y="Budget", color="Kanaal", title="Toegekend budget per kanaal")
+    st.plotly_chart(fig)
 
-st.subheader("📋 Belangrijke overwegingen in het model")
-st.write(
-    "✅ **Bereik per kanaal**: Sommige kanalen hebben een groter publiek en zijn geschikt voor brede awareness."
-    "✅ **Effectiviteit**: Engagement-kanalen zoals Video en Social zijn beter voor overweging en voorkeur."
-    "✅ **Kosten per 1000 impressies**: DOOH en CTV zijn duurder, maar hebben vaak een hogere attentiewaarde."
-    "✅ **Looptijd en consistentie**: Een langere campagne met consistente exposure levert vaak betere resultaten."
-)
+    # Extra uitleg over de optimalisatie
+    st.subheader("🔍 Hoe is dit advies tot stand gekomen?")
+    st.write(
+        "Het model analyseert de gekozen doelen, kanalen, looptijd en budgetverdeling om een strategie op te stellen. "
+        "De belangrijkste overwegingen zijn het bereik van elk kanaal, de geschatte effectiviteit en de kosten per 1000 vertoningen. "
+        "Door slimme budgetallocatie worden kanalen geoptimaliseerd om de beste impact te realiseren."
+    )
 
-
+    st.subheader("📋 Belangrijke overwegingen in het model")
+    st.write(
+        "✅ **Bereik per kanaal**: Sommige kanalen hebben een groter publiek en zijn geschikt voor brede awareness."
+        "✅ **Effectiviteit**: Engagement-kanalen zoals Video en Social zijn beter voor overweging en voorkeur."
+        "✅ **Kosten per 1000 impressies**: DOOH en CTV zijn duurder, maar hebben vaak een hogere attentiewaarde."
+        "✅ **Looptijd en consistentie**: Een langere campagne met consistente exposure levert vaak betere resultaten."
+        "✅ **Frequentie cap**: Een optimale frequentie voorkomt overexposure en verbetert de efficiëntie van de campagne."
+    )
