@@ -71,6 +71,11 @@ with tab1:
     if st.button("🔍 Bereken optimale mediaselectie"):
         st.session_state["optimalisatie_df"] = pd.DataFrame({"Kanaal": geselecteerde_kanalen, "Budget Allocatie (€)": budget_per_week})
         st.success("✅ Mediaselectie berekend!")
+        
+        # Grafieken genereren
+        st.subheader("📊 Budget Allocatie per Kanaal")
+        fig = px.bar(st.session_state["optimalisatie_df"], x="Kanaal", y="Budget Allocatie (€)", color="Kanaal", title="Budget Allocatie per Kanaal")
+        st.plotly_chart(fig)
 
 with tab2:
     st.subheader("🛠 Scenario Analyse")
@@ -88,4 +93,13 @@ with tab2:
 
 with tab3:
     st.subheader("📈 ROI & Budget Optimalisatie")
-    st.write("🔍 Deze sectie zal geavanceerde budget optimalisatie tonen.")
+    if st.session_state["optimalisatie_df"] is None:
+        st.warning("🔹 Voer eerst een berekening uit in het tabblad 'Basis Optimalisatie'.")
+    else:
+        st.write("🔍 ROI analyse op basis van budgetverdeling.")
+        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
+        optimalisatie_df["ROI"] = optimalisatie_df["Budget Allocatie (€)"] / st.session_state["totaal_budget"] * 100
+        st.dataframe(optimalisatie_df)
+        fig = px.line(optimalisatie_df, x="Kanaal", y="ROI", title="ROI per Kanaal")
+        st.plotly_chart(fig)
+
