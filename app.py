@@ -78,13 +78,13 @@ roi_benchmark = {
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse", "📈 ROI & Brand Uplift", "🔄 Budget Optimalisatie", "📊 Impact vs Kosten Analyse"])
 
 if "optimalisatie_df" not in st.session_state:
-    st.session_state["optimalisatie_df"] = None
+    st.session_state["optimalisatie_df"] = pd.DataFrame(columns=["Kanaal", "Effectiviteit", "Impact Score", "CPM Kosten (€)", "Impact per Euro"])
 if "totaal_budget" not in st.session_state:
     st.session_state["totaal_budget"] = 50000  # Standaard budget
 
 with tab5:
     st.subheader("📊 Impact vs Kosten Analyse")
-    if st.session_state["optimalisatie_df"] is not None:
+    if not st.session_state["optimalisatie_df"].empty:
         optimalisatie_df = st.session_state["optimalisatie_df"].copy()
         optimalisatie_df["Impact Score"] = optimalisatie_df["Kanaal"].map(impact_factors)
         optimalisatie_df["CPM Kosten (€)"] = optimalisatie_df["Kanaal"].map(cpm_costs)
