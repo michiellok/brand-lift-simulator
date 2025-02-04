@@ -94,6 +94,8 @@ with tab1:
     totale_uplift_factor = sum([media_impact[k] for k in geselecteerde_kanalen])
     uiteindelijke_uplift = standaard_uplift * (1 + totale_uplift_factor)
     
+    impressies_per_kanaal = {k: (totaal_budget / cpm) * media_impact[k] for k in geselecteerde_kanalen}
+    
     st.markdown(f"**📈 Verwachte Brand Uplift:** Standaard voor *{sector}* is **{standaard_uplift}%**. Door je mediakeuze stijgt de uplift naar **{uiteindelijke_uplift:.1f}%**.")
     
     uplift_df = pd.DataFrame({
@@ -103,40 +105,13 @@ with tab1:
     fig = px.bar(uplift_df, x="Type", y="Brand Uplift (%)", title="Impact van Media Keuze op Brand Uplift", color="Type")
     st.plotly_chart(fig)
     
+    impressie_df = pd.DataFrame(list(impressies_per_kanaal.items()), columns=["Kanaal", "Impressies"])
+    st.dataframe(impressie_df, use_container_width=True)
+    
     if st.button("🔍 Bereken optimale mediaselectie"):
         st.session_state["optimalisatie_df"] = pd.DataFrame({
             "Kanaal": geselecteerde_kanalen,
-            "Effectiviteit": [media_impact[k] for k in geselecteerde_kanalen]
+            "Effectiviteit": [media_impact[k] for k in geselecteerde_kanalen],
+            "Impressies": [impressies_per_kanaal[k] for k in geselecteerde_kanalen]
         })
         st.success("✅ Mediaselectie berekend!")
-
-with tab2:
-    st.subheader("🛠 Scenario Analyse")
-    if st.session_state["optimalisatie_df"] is not None:
-        scenario_budget_pct = st.slider("💰 Wat als we het budget verhogen? (in %)", min_value=100, max_value=200, value=100, step=5)
-        scenario_budget = (scenario_budget_pct / 100) * st.session_state["totaal_budget"]
-        impact_toename = scenario_budget / st.session_state["totaal_budget"]
-        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
-        optimalisatie_df["Effectiviteit"] *= impact_toename
-        st.dataframe(optimalisatie_df)
-        fig = px.bar(optimalisatie_df, x="Kanaal", y="Effectiviteit", color="Kanaal", title="Scenario Impact op Brand Uplift")
-        st.plotly_chart(fig)
-
-with tab3:
-    st.subheader("📈 ROI & Brand Uplift Analyse")
-    if st.session_state["optimalisatie_df"] is not None:
-        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
-        optimalisatie_df["ROI"] = (optimalisatie_df["Effectiviteit"] / sum(media_impact.values())) * 100
-        st.dataframe(optimalisatie_df)
-        fig = px.line(optimalisatie_df, x="Kanaal", y="ROI", title="ROI per Kanaal")
-        st.plotly_chart(fig)
-
-with tab4:
-    st.subheader("🔄 Budget Optimalisatie")
-    if st.session_state["optimalisatie_df"] is not None:
-        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
-        optimalisatie_df["Budget Allocation (%)"] = (optimalisatie_df["Effectiviteit"] / optimalisatie_df["Effectiviteit"].sum()) * 100
-        st.dataframe(optimalisatie_df)
-        fig = px.pie(optimalisatie_df, names="Kanaal", values="Budget Allocation (%)", title="Optimale Budget Verdeling")
-        st.plotly_chart(fig)
-
