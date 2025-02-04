@@ -41,6 +41,25 @@ media_impact = {
     "Social": 0.08
 }
 
+# Impact factoren en kosten per kanaal
+impact_factors = {
+    "CTV": 255,
+    "TV": 309,
+    "Video": 145,
+    "Display": 138,
+    "DOOH": 180,
+    "Social": 72
+}
+
+cpm_costs = {
+    "CTV": 30,
+    "TV": 50,
+    "Video": 12,
+    "Display": 5,
+    "DOOH": 20,
+    "Social": 3
+}
+
 # Benchmarking data voor ROI en sector prestaties
 roi_benchmark = {
     "FMCG": 2.5,
@@ -56,62 +75,25 @@ roi_benchmark = {
 }
 
 # Tabs voor structuur
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse", "📈 ROI & Brand Uplift", "🔄 Budget Optimalisatie"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse", "📈 ROI & Brand Uplift", "🔄 Budget Optimalisatie", "📊 Impact vs Kosten Analyse"])
 
 if "optimalisatie_df" not in st.session_state:
     st.session_state["optimalisatie_df"] = None
 if "totaal_budget" not in st.session_state:
     st.session_state["totaal_budget"] = 50000  # Standaard budget
 
-with tab1:
-    st.subheader("📊 Basis Optimalisatie")
-    adverteerder = st.text_input("🏢 Naam Adverteerder", "")
-    campagne_naam = st.text_input("📢 Campagne Naam", "")
-    sector = st.selectbox("🏭 Sector", list(brand_uplift_sector.keys()))
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        campagne_doel = st.selectbox("Wat is het primaire doel van je campagne?", [
-            "Merkbekendheid verhogen",
-            "Overweging stimuleren",
-            "Voorkeur opbouwen",
-            "Koopintentie versterken"
-        ])
-        totaal_budget = st.number_input("💰 Wat is het totale budget (in €)?", min_value=1000, max_value=1000000, value=50000)
-        st.session_state["totaal_budget"] = totaal_budget  # Sla budget op voor andere tabs
-        cpm = st.number_input("📉 Gemiddelde CPM (kosten per 1000 impressies in €)", min_value=1.0, max_value=50.0, value=5.0, step=0.5)
-    
-    with col2:
-        start_datum = st.date_input("📅 Startdatum")
-        eind_datum = st.date_input("📅 Einddatum")
-        weken = max((eind_datum - start_datum).days // 7, 1)  # Zorg ervoor dat weken minimaal 1 is
-        freq_cap = st.slider("🔄 Max. frequentie per gebruiker", min_value=1, max_value=20, value=5, step=1)
-        time_decay_factor = st.slider("⏳ Impact verloop over tijd ❔", min_value=0.01, max_value=1.0, value=0.5, step=0.01, help="Dit modelleert hoe de impact van advertenties afneemt over dagen.")
-    
-    geselecteerde_kanalen = st.multiselect("📡 Selecteer kanalen", list(media_impact.keys()), default=["CTV", "Video", "Display"])
-    
-    standaard_uplift = brand_uplift_sector[sector]
-    totale_uplift_factor = sum([media_impact[k] for k in geselecteerde_kanalen])
-    uiteindelijke_uplift = standaard_uplift * (1 + totale_uplift_factor)
-    
-    impressies_per_kanaal = {k: (totaal_budget / cpm) * media_impact[k] for k in geselecteerde_kanalen}
-    
-    st.markdown(f"**📈 Verwachte Brand Uplift:** Standaard voor *{sector}* is **{standaard_uplift}%**. Door je mediakeuze stijgt de uplift naar **{uiteindelijke_uplift:.1f}%**.")
-    
-    uplift_df = pd.DataFrame({
-        "Type": ["Standaard Uplift", "Uplift na Mediakeuze"],
-        "Brand Uplift (%)": [standaard_uplift, uiteindelijke_uplift]
-    })
-    fig = px.bar(uplift_df, x="Type", y="Brand Uplift (%)", title="Impact van Media Keuze op Brand Uplift", color="Type")
-    st.plotly_chart(fig)
-    
-    impressie_df = pd.DataFrame(list(impressies_per_kanaal.items()), columns=["Kanaal", "Impressies"])
-    st.dataframe(impressie_df, use_container_width=True)
-    
-    if st.button("🔍 Bereken optimale mediaselectie"):
-        st.session_state["optimalisatie_df"] = pd.DataFrame({
-            "Kanaal": geselecteerde_kanalen,
-            "Effectiviteit": [media_impact[k] for k in geselecteerde_kanalen],
-            "Impressies": [impressies_per_kanaal[k] for k in geselecteerde_kanalen]
-        })
-        st.success("✅ Mediaselectie berekend!")
+with tab5:
+    st.subheader("📊 Impact vs Kosten Analyse")
+    if st.session_state["optimalisatie_df"] is not None:
+        optimalisatie_df = st.session_state["optimalisatie_df"].copy()
+        optimalisatie_df["Impact Score"] = optimalisatie_df["Kanaal"].map(impact_factors)
+        optimalisatie_df["CPM Kosten (€)"] = optimalisatie_df["Kanaal"].map(cpm_costs)
+        optimalisatie_df["Impact per Euro"] = optimalisatie_df["Impact Score"] / optimalisatie_df["CPM Kosten (€)"]
+        
+        st.dataframe(optimalisatie_df)
+        
+        fig = px.scatter(optimalisatie_df, x="CPM Kosten (€)", y="Impact Score", size="Impact per Euro", color="Kanaal", title="Impact vs Kosten per Kanaal")
+        st.plotly_chart(fig)
+
+        best_option = optimalisatie_df.loc[optimalisatie_df["Impact per Euro"].idxmax()]
+        st.markdown(f"**🎯 Beste optie:** {best_option['Kanaal']} met een impact per euro van {best_option['Impact per Euro']:.2f}!")
