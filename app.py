@@ -77,23 +77,26 @@ roi_benchmark = {
 # Tabs voor structuur
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Basis Optimalisatie", "🛠 Scenario Analyse", "📈 ROI & Brand Uplift", "🔄 Budget Optimalisatie", "📊 Impact vs Kosten Analyse"])
 
-if "optimalisatie_df" not in st.session_state:
+if "optimalisatie_df" not in st.session_state or st.session_state["optimalisatie_df"].empty:
     st.session_state["optimalisatie_df"] = pd.DataFrame(columns=["Kanaal", "Effectiviteit", "Impact Score", "CPM Kosten (€)", "Impact per Euro"])
 if "totaal_budget" not in st.session_state:
     st.session_state["totaal_budget"] = 50000  # Standaard budget
 
 with tab5:
     st.subheader("📊 Impact vs Kosten Analyse")
-    if not st.session_state["optimalisatie_df"].empty and "Kanaal" in st.session_state["optimalisatie_df"].columns:
+    if not st.session_state["optimalisatie_df"].empty:
         optimalisatie_df = st.session_state["optimalisatie_df"].copy()
-        optimalisatie_df["Impact Score"] = optimalisatie_df["Kanaal"].map(impact_factors)
-        optimalisatie_df["CPM Kosten (€)"] = optimalisatie_df["Kanaal"].map(cpm_costs)
-        optimalisatie_df["Impact per Euro"] = optimalisatie_df["Impact Score"] / optimalisatie_df["CPM Kosten (€)"]
-        
-        st.dataframe(optimalisatie_df)
-        
-        fig = px.scatter(optimalisatie_df, x="CPM Kosten (€)", y="Impact Score", size="Impact per Euro", color="Kanaal", title="Impact vs Kosten per Kanaal")
-        st.plotly_chart(fig)
+        if "Kanaal" in optimalisatie_df.columns:
+            optimalisatie_df["Impact Score"] = optimalisatie_df["Kanaal"].map(impact_factors)
+            optimalisatie_df["CPM Kosten (€)"] = optimalisatie_df["Kanaal"].map(cpm_costs)
+            optimalisatie_df["Impact per Euro"] = optimalisatie_df["Impact Score"] / optimalisatie_df["CPM Kosten (€)"]
+            
+            st.dataframe(optimalisatie_df)
+            
+            fig = px.scatter(optimalisatie_df, x="CPM Kosten (€)", y="Impact Score", size="Impact per Euro", color="Kanaal", title="Impact vs Kosten per Kanaal")
+            st.plotly_chart(fig)
 
-        best_option = optimalisatie_df.loc[optimalisatie_df["Impact per Euro"].idxmax()]
-        st.markdown(f"**🎯 Beste optie:** {best_option['Kanaal']} met een impact per euro van {best_option['Impact per Euro']:.2f}!")
+            best_option = optimalisatie_df.loc[optimalisatie_df["Impact per Euro"].idxmax()]
+            st.markdown(f"**🎯 Beste optie:** {best_option['Kanaal']} met een impact per euro van {best_option['Impact per Euro']:.2f}!")
+        else:
+            st.warning("Geen kanalen geselecteerd. Voeg eerst kanalen toe in de basis optimalisatie tab.")
