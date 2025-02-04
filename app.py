@@ -84,7 +84,7 @@ if "totaal_budget" not in st.session_state:
 
 with tab5:
     st.subheader("📊 Impact vs Kosten Analyse")
-    if not st.session_state["optimalisatie_df"].empty:
+    if not st.session_state["optimalisatie_df"].empty and "Kanaal" in st.session_state["optimalisatie_df"].columns:
         optimalisatie_df = st.session_state["optimalisatie_df"].copy()
         optimalisatie_df["Impact Score"] = optimalisatie_df["Kanaal"].map(impact_factors)
         optimalisatie_df["CPM Kosten (€)"] = optimalisatie_df["Kanaal"].map(cpm_costs)
