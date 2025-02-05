@@ -51,40 +51,30 @@ with tab2:
     if "kanalen" in st.session_state and st.session_state["kanalen"]:
         cpm_values = {"CTV": 35, "Video": 20, "Display": 10, "DOOH": 25, "Social": 5}
         brand_uplift_factors = {"CTV": 0.8, "Video": 0.6, "Display": 0.4, "DOOH": 0.7, "Social": 0.5}
-        roi_factors = {"CTV": 1.2, "Video": 1.1, "Display": 0.9, "DOOH": 1.0, "Social": 0.8}
         
         voorspellingen = pd.DataFrame({
             "Kanaal": st.session_state["kanalen"],
             "CPM (€)": [cpm_values[k] for k in st.session_state["kanalen"]],
-            "Brand Uplift Factor": [brand_uplift_factors[k] for k in st.session_state["kanalen"]],
-            "ROI Factor": [roi_factors[k] for k in st.session_state["kanalen"]]
+            "Brand Uplift Factor": [brand_uplift_factors[k] for k in st.session_state["kanalen"]]
         })
         
         voorspellingen["Impressies"] = st.session_state["budget"] / voorspellingen["CPM (€)"] * 1000
         voorspellingen["Verwachte Brand Uplift (%)"] = voorspellingen["Brand Uplift Factor"] * (voorspellingen["Impressies"] / 1_000_000) * 100
-        voorspellingen["Verwachte ROI (€)"] = voorspellingen["ROI Factor"] * (voorspellingen["Impressies"] / 1000) * voorspellingen["CPM (€)"]
         
         st.dataframe(voorspellingen)
         fig = px.bar(voorspellingen, x="Kanaal", y="Verwachte Brand Uplift (%)", color="Kanaal", title="Verwachte Brand Uplift per Kanaal")
         st.plotly_chart(fig)
         
-        # Automatische budget optimalisatie
-        if st.button("🔍 Optimaliseer Budget"):
-            voorspellingen["Optimale Allocatie (%)"] = (voorspellingen["Verwachte ROI (€)"] / voorspellingen["Verwachte ROI (€)"].sum()) * 100
-            st.session_state["voorspellingen"] = voorspellingen
-            st.success("Budget opnieuw gealloceerd op basis van maximale ROI!")
-            st.dataframe(voorspellingen[["Kanaal", "Optimale Allocatie (%)"]])
-        
         # Scenario simulatie
         budget_scenario = st.slider("📊 Simuleer Budgetverandering (%)", 50, 150, 100, step=5)
-        voorspellingen["Scenario ROI (€)"] = voorspellingen["Verwachte ROI (€)"] * (budget_scenario / 100)
-        st.dataframe(voorspellingen[["Kanaal", "Scenario ROI (€)"]])
+        voorspellingen["Scenario Uplift (%)"] = voorspellingen["Verwachte Brand Uplift (%)"] * (budget_scenario / 100)
+        st.dataframe(voorspellingen[["Kanaal", "Scenario Uplift (%)"]])
         
         # Automatisch Campagne-advies
-        best_kanaal = voorspellingen.loc[voorspellingen["Verwachte ROI (€)"].idxmax()]
-        st.markdown(f"**📢 Advies:** Het kanaal **{best_kanaal['Kanaal']}** biedt de hoogste ROI met een verwachte ROI van **€{best_kanaal['Verwachte ROI (€)']:.2f}**. Overweeg hier meer budget aan toe te wijzen.")
+        best_kanaal = voorspellingen.loc[voorspellingen["Verwachte Brand Uplift (%)"].idxmax()]
+        st.markdown(f"**📢 Advies:** Het kanaal **{best_kanaal['Kanaal']}** biedt de hoogste Brand Uplift met een verwachte uplift van **{best_kanaal['Verwachte Brand Uplift (%)']:.2f}%**. Overweeg hier meer budget aan toe te wijzen.")
         
-        st.markdown("**📌 Uitleg:** De CPM waarden zijn gebaseerd op gemiddelde marktkosten per kanaal. De Brand Uplift Factor wordt berekend op basis van historische prestaties en impact per kanaal. De ROI Factor wordt berekend op basis van marktanalyse en rendement per impressie.")
+        st.markdown("**📌 Uitleg:** De CPM waarden zijn gebaseerd op gemiddelde marktkosten per kanaal. De Brand Uplift Factor wordt berekend op basis van historische prestaties en impact per kanaal.")
 
 with tab3:
     st.subheader("🚀 Activatie & Export")
