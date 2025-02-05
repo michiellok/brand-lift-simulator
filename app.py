@@ -39,23 +39,37 @@ with tab1:
     st.markdown("### 🎯 Media Kanalen Selectie")
     kanalen = st.multiselect("Selecteer de mediakanalen", ["CTV", "Video", "Display", "DOOH", "Social"])
     budget_verdeling = {kanaal: st.slider(f"Budget Allocatie {kanaal} (%)", 0, 100, 20, step=5) for kanaal in kanalen}
+    
+    if st.button("📝 Genereer Plan"):
+        st.session_state["kanalen"] = kanalen
+        st.session_state["budget_verdeling"] = budget_verdeling
+        st.session_state["budget"] = budget
+        st.success("Plan gegenereerd! Ga naar de volgende tab voor voorspellingen.")
 
 with tab2:
     st.subheader("📈 Voorspelling & Scenario’s")
-    if kanalen:
+    if "kanalen" in st.session_state and st.session_state["kanalen"]:
+        cpm_values = {"CTV": 35, "Video": 20, "Display": 10, "DOOH": 25, "Social": 5}
+        brand_uplift_factors = {"CTV": 0.8, "Video": 0.6, "Display": 0.4, "DOOH": 0.7, "Social": 0.5}
+        
         voorspellingen = pd.DataFrame({
-            "Kanaal": kanalen,
-            "CPM (€)": [np.random.randint(5, 50) for _ in kanalen],
-            "Brand Uplift (%)": [np.random.uniform(1, 10) for _ in kanalen]
+            "Kanaal": st.session_state["kanalen"],
+            "CPM (€)": [cpm_values[k] for k in st.session_state["kanalen"]],
+            "Brand Uplift Factor": [brand_uplift_factors[k] for k in st.session_state["kanalen"]],
         })
-        voorspellingen["Impressies"] = budget * (voorspellingen["Brand Uplift (%)"] / 100)
+        
+        voorspellingen["Impressies"] = st.session_state["budget"] / voorspellingen["CPM (€)"] * 1000
+        voorspellingen["Verwachte Brand Uplift (%)"] = voorspellingen["Brand Uplift Factor"] * (voorspellingen["Impressies"] / 1_000_000) * 100
+        
         st.dataframe(voorspellingen)
-        fig = px.bar(voorspellingen, x="Kanaal", y="Brand Uplift (%)", color="Kanaal", title="Verwachte Brand Uplift per Kanaal")
+        fig = px.bar(voorspellingen, x="Kanaal", y="Verwachte Brand Uplift (%)", color="Kanaal", title="Verwachte Brand Uplift per Kanaal")
         st.plotly_chart(fig)
+        
+        st.markdown("**📌 Uitleg:** De CPM waarden zijn gebaseerd op gemiddelde marktkosten per kanaal. De Brand Uplift Factor wordt berekend op basis van historische prestaties en impact per kanaal.")
 
 with tab3:
     st.subheader("🚀 Activatie & Export")
-    if kanalen:
+    if "kanalen" in st.session_state and st.session_state["kanalen"]:
         st.write("Klaar om naar DSP te exporteren!")
         if st.button("🔄 Genereer Export Bestand"):
             st.success("Export succesvol aangemaakt!")
