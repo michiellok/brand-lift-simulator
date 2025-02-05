@@ -68,6 +68,18 @@ with tab2:
         fig = px.bar(voorspellingen, x="Kanaal", y="Verwachte Brand Uplift (%)", color="Kanaal", title="Verwachte Brand Uplift per Kanaal")
         st.plotly_chart(fig)
         
+        # Automatische budget optimalisatie
+        if st.button("🔍 Optimaliseer Budget"):
+            voorspellingen["Optimale Allocatie (%)"] = (voorspellingen["Verwachte ROI (€)"] / voorspellingen["Verwachte ROI (€)"].sum()) * 100
+            st.session_state["voorspellingen"] = voorspellingen
+            st.success("Budget opnieuw gealloceerd op basis van maximale ROI!")
+            st.dataframe(voorspellingen[["Kanaal", "Optimale Allocatie (%)"]])
+        
+        # Scenario simulatie
+        budget_scenario = st.slider("📊 Simuleer Budgetverandering (%)", 50, 150, 100, step=5)
+        voorspellingen["Scenario ROI (€)"] = voorspellingen["Verwachte ROI (€)"] * (budget_scenario / 100)
+        st.dataframe(voorspellingen[["Kanaal", "Scenario ROI (€)"]])
+        
         # Automatisch Campagne-advies
         best_kanaal = voorspellingen.loc[voorspellingen["Verwachte ROI (€)"].idxmax()]
         st.markdown(f"**📢 Advies:** Het kanaal **{best_kanaal['Kanaal']}** biedt de hoogste ROI met een verwachte ROI van **€{best_kanaal['Verwachte ROI (€)']:.2f}**. Overweeg hier meer budget aan toe te wijzen.")
@@ -80,4 +92,3 @@ with tab3:
         st.write("Klaar om naar DSP te exporteren!")
         if st.button("📡 Upload naar DSP"):
             st.success("✅ Campagne succesvol geüpload naar DSP!")
-
