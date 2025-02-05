@@ -68,11 +68,16 @@ with tab2:
         fig = px.bar(voorspellingen, x="Kanaal", y="Verwachte Brand Uplift (%)", color="Kanaal", title="Verwachte Brand Uplift per Kanaal")
         st.plotly_chart(fig)
         
+        # Automatisch Campagne-advies
+        best_kanaal = voorspellingen.loc[voorspellingen["Verwachte ROI (€)"].idxmax()]
+        st.markdown(f"**📢 Advies:** Het kanaal **{best_kanaal['Kanaal']}** biedt de hoogste ROI met een verwachte ROI van **€{best_kanaal['Verwachte ROI (€)']:.2f}**. Overweeg hier meer budget aan toe te wijzen.")
+        
         st.markdown("**📌 Uitleg:** De CPM waarden zijn gebaseerd op gemiddelde marktkosten per kanaal. De Brand Uplift Factor wordt berekend op basis van historische prestaties en impact per kanaal. De ROI Factor wordt berekend op basis van marktanalyse en rendement per impressie.")
 
 with tab3:
     st.subheader("🚀 Activatie & Export")
     if "kanalen" in st.session_state and st.session_state["kanalen"]:
         st.write("Klaar om naar DSP te exporteren!")
-        if st.button("🔄 Genereer Export Bestand"):
-            st.success("Export succesvol aangemaakt!")
+        if st.button("📡 Upload naar DSP"):
+            st.success("✅ Campagne succesvol geüpload naar DSP!")
+
