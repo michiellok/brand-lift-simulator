@@ -51,11 +51,15 @@ with tab2:
     if "kanalen" in st.session_state and st.session_state["kanalen"]:
         cpm_values = {"CTV": 35, "Video": 20, "Display": 10, "DOOH": 25, "Social": 5}
         brand_uplift_factors = {"CTV": 0.8, "Video": 0.6, "Display": 0.4, "DOOH": 0.7, "Social": 0.5}
+        viewability_factors = {"CTV": 85, "Video": 75, "Display": 60, "DOOH": 90, "Social": 50}
+        engagement_factors = {"CTV": 0.15, "Video": 0.10, "Display": 0.05, "DOOH": 0.12, "Social": 0.08}
         
         voorspellingen = pd.DataFrame({
             "Kanaal": st.session_state["kanalen"],
             "CPM (€)": [cpm_values[k] for k in st.session_state["kanalen"]],
-            "Brand Uplift Factor": [brand_uplift_factors[k] for k in st.session_state["kanalen"]]
+            "Brand Uplift Factor": [brand_uplift_factors[k] for k in st.session_state["kanalen"]],
+            "Viewability (%)": [viewability_factors[k] for k in st.session_state["kanalen"]],
+            "Engagement Rate (%)": [engagement_factors[k] * 100 for k in st.session_state["kanalen"]]
         })
         
         voorspellingen["Impressies"] = st.session_state["budget"] / voorspellingen["CPM (€)"] * 1000
@@ -65,16 +69,16 @@ with tab2:
         fig = px.bar(voorspellingen, x="Kanaal", y="Verwachte Brand Uplift (%)", color="Kanaal", title="Verwachte Brand Uplift per Kanaal")
         st.plotly_chart(fig)
         
-        # Scenario simulatie
-        budget_scenario = st.slider("📊 Simuleer Budgetverandering (%)", 50, 150, 100, step=5)
-        voorspellingen["Scenario Uplift (%)"] = voorspellingen["Verwachte Brand Uplift (%)"] * (budget_scenario / 100)
-        st.dataframe(voorspellingen[["Kanaal", "Scenario Uplift (%)"]])
+        # Impact over tijd simulatie
+        time_decay = st.slider("📉 Impact verloop over tijd (%)", 50, 100, 75, step=5)
+        voorspellingen["Impact na tijd"] = voorspellingen["Verwachte Brand Uplift (%)"] * (time_decay / 100)
+        st.dataframe(voorspellingen[["Kanaal", "Impact na tijd"]])
         
         # Automatisch Campagne-advies
         best_kanaal = voorspellingen.loc[voorspellingen["Verwachte Brand Uplift (%)"].idxmax()]
         st.markdown(f"**📢 Advies:** Het kanaal **{best_kanaal['Kanaal']}** biedt de hoogste Brand Uplift met een verwachte uplift van **{best_kanaal['Verwachte Brand Uplift (%)']:.2f}%**. Overweeg hier meer budget aan toe te wijzen.")
         
-        st.markdown("**📌 Uitleg:** De CPM waarden zijn gebaseerd op gemiddelde marktkosten per kanaal. De Brand Uplift Factor wordt berekend op basis van historische prestaties en impact per kanaal.")
+        st.markdown("**📌 Uitleg:** De CPM waarden zijn gebaseerd op gemiddelde marktkosten per kanaal. De Brand Uplift Factor wordt berekend op basis van historische prestaties en impact per kanaal. Viewability en Engagement rates geven extra inzicht in de effectiviteit van het kanaal.")
 
 with tab3:
     st.subheader("🚀 Activatie & Export")
