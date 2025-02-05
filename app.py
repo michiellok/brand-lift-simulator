@@ -72,13 +72,16 @@ with tab2:
         # Impact over tijd simulatie
         time_decay = st.slider("📉 Impact verloop over tijd (%)", 50, 100, 75, step=5)
         voorspellingen["Impact na tijd"] = voorspellingen["Verwachte Brand Uplift (%)"] * (time_decay / 100)
-        st.dataframe(voorspellingen[["Kanaal", "Impact na tijd"]])
+        
+        # Grafiek impact verloop over tijd
+        fig2 = px.line(voorspellingen, x="Kanaal", y="Impact na tijd", title="Impact verloop over tijd per kanaal", markers=True)
+        st.plotly_chart(fig2)
         
         # Automatisch Campagne-advies
         best_kanaal = voorspellingen.loc[voorspellingen["Verwachte Brand Uplift (%)"].idxmax()]
         st.markdown(f"**📢 Advies:** Het kanaal **{best_kanaal['Kanaal']}** biedt de hoogste Brand Uplift met een verwachte uplift van **{best_kanaal['Verwachte Brand Uplift (%)']:.2f}%**. Overweeg hier meer budget aan toe te wijzen.")
         
-        st.markdown("**📌 Uitleg:** De CPM waarden zijn gebaseerd op gemiddelde marktkosten per kanaal. De Brand Uplift Factor wordt berekend op basis van historische prestaties en impact per kanaal. Viewability en Engagement rates geven extra inzicht in de effectiviteit van het kanaal.")
+        st.markdown("**📌 Uitleg:** De CPM waarden zijn gebaseerd op gemiddelde marktkosten per kanaal. De Brand Uplift Factor wordt berekend op basis van historische prestaties en impact per kanaal. Viewability en Engagement rates geven extra inzicht in de effectiviteit van het kanaal. De impact verloop over tijd laat zien hoe het effect van je advertenties afneemt na verloop van tijd. Overweeg strategische herhaling of een nieuwe boodschap om relevant te blijven.")
 
 with tab3:
     st.subheader("🚀 Activatie & Export")
