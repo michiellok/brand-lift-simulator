@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
@@ -31,15 +29,6 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 mae = mean_absolute_error(y_test, y_pred)
 
-# Visualization
-plt.figure(figsize=(10, 5))
-sns.barplot(data=data, x='Campaign', y='Lift_Difference', ci=None)
-plt.title('Brand Lift Difference by Campaign')
-plt.xlabel('Media Channel')
-plt.ylabel('Brand Lift Impact')
-plt.xticks(rotation=45)
-plt.show()
-
 # Print Model Performance
 print(f'Model MAE: {mae:.4f}')
 
@@ -47,3 +36,4 @@ print(f'Model MAE: {mae:.4f}')
 data_sorted = data.sort_values(by='Lift_Difference', ascending=False)
 print("\nTop 5 Best Performing Campaigns:")
 print(data_sorted.head())
+
