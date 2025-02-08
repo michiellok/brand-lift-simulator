@@ -31,12 +31,13 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 mae = mean_absolute_error(y_test, y_pred)
 
-# Dashboard Visualization
+# Visualization
 plt.figure(figsize=(10, 5))
 sns.barplot(data=data, x='Campaign', y='Lift_Difference', ci=None)
 plt.title('Brand Lift Difference by Campaign')
 plt.xlabel('Media Channel')
 plt.ylabel('Brand Lift Impact')
+plt.xticks(rotation=45)
 plt.show()
 
 # Print Model Performance
